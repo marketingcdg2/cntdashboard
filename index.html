@@ -156,7 +156,8 @@
   .aud-row.totals:hover { background:none; }
   .aud-toggle { background:none; border:none; color:var(--text-secondary); font-size:12px; cursor:pointer; width:20px; padding:0; transition: transform .12s; }
   .aud-toggle.open { transform: rotate(90deg); }
-  .aud-name { text-align:left !important; display:flex; align-items:center; gap:8px; font-variant-numeric: normal; }
+  .aud-name { text-align:left !important; display:flex; flex-direction:column; align-items:flex-start; gap:2px; font-variant-numeric: normal; }
+  .aud-days { font-size:10.5px; color:var(--text-muted); font-weight:500; }
   .aud-detail { padding: 6px 14px 18px 40px; border-bottom:1px solid var(--gridline); background: var(--page-plane); }
   .aud-detail-note { font-size:11.5px; color:var(--text-secondary); margin: 4px 0 8px; }
   .brk-scroll { max-height: 420px; overflow-y:auto; overflow-x:auto; border:1px solid var(--border); border-radius:8px; }
@@ -220,7 +221,7 @@
       <span class="control-label">ช่วงที่ดู</span>
       <b>10 ส.ค. – 8 ก.ย. 2569</b> <span class="sep">(30 วันล่าสุด)</span>
       <span class="sep">เทียบกับ</span>
-      <b>11 ก.ค. – 9 ก.ย. 2569</b> <span class="sep">(30 วันก่อนหน้า)</span>
+      <b>11 ก.ค. – 9 ส.ค. 2569</b> <span class="sep">(30 วันก่อนหน้า)</span>
     </div>
   </div>
 
@@ -363,7 +364,7 @@ const rowsMewsPrimary = [
 ];
 
 // both Mews ad accounts had literally zero spend / null reach across every ad in the
-// comparison period (11 ก.ค.–9 ก.ย.) — genuinely new activity, not a data gap.
+// comparison period (11 ก.ค.–9 ส.ค.) — genuinely new activity, not a data gap.
 const rowsMewsComparison = rowsMewsPrimary.map(r => ({...r, spend:0, reach:0, inbox:0}));
 
 const ALL_PRIMARY = [...rowsMonoPrimary, ...rowsMewsPrimary];
@@ -379,6 +380,31 @@ function classifyObjective(campaignName){
   if (n.includes('inbox') || n.includes('message')) return 'Inbox';
   if (n.includes('aware')) return 'Awareness';
   return 'Awareness';
+}
+
+// ================= real ad set start dates (fetched from Meta Marketing API, adset.start_time) =================
+// Keyed by ad set name exactly as it appears in the rows above. When the same ad set name is reused across
+// multiple campaigns/ad accounts (e.g. Mews ad sets that exist in both Mews ad accounts), the EARLIEST
+// start_time across all of them is used, since that's when this audience first started running.
+const adsetStartTime = {
+  '[lookalike 2%]_[local/CBD]_[interest audience]': '2026-08-06T08:59:49+07:00',
+  '[lifestyle]_[local /CBD]_[interest-audience]': '2026-08-05T18:22:00+07:00',
+  'real estate+investment+white collar': '2026-08-05T16:26:54+07:00',
+  '[lookalike 1%]_[local/CBD] _[interest audience]': '2026-08-05T18:39:48+07:00',
+  '[lifestyle]_[local/CBD]_[inte rest-audience]': '2026-08-06T09:38:48+07:00',
+  '[Investment+realestate+w hite collar]_[local/CBD]_[interes t-audience]': '2026-08-06T09:32:03+07:00',
+  'Re-target': '2026-09-05T11:57:01+07:00',
+  'Lifestyle': '2026-09-05T12:15:45+07:00',
+  'Data_Lookalike1%': '2026-09-05T11:52:45+07:00',
+  'RealEs+BusinessOwer+Inves+Lifetyle': '2026-09-05T11:47:35+07:00',
+};
+function daysRunningFor(adsetName){
+  const iso = adsetStartTime[adsetName];
+  if (!iso) return null;
+  const start = new Date(iso);
+  if (isNaN(start)) return null;
+  const days = Math.floor((Date.now() - start.getTime()) / 86400000);
+  return days >= 0 ? days : 0;
 }
 
 // ================= real Messenger chat data (fetched via Graph API Conversations) =================
@@ -437,6 +463,26 @@ const chatsRaw = [
   {id:"t_1599421005163886", page:"mono", pageName:"Chanuntorn Development Group", customerName:"ITon SB PJ", updatedTime:"2026-08-28T06:45:46+0000", messageCount:42, content:null, addLine:false, suggestedStatus:null},
   {id:"t_1837069177658559", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Yuwabee Kumngam", updatedTime:"2026-08-28T04:43:45+0000", messageCount:11, content:null, addLine:false, suggestedStatus:null},
   {id:"t_2187905048211330", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Rainbow RK", updatedTime:"2026-08-28T04:22:16+0000", messageCount:32, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_122115343953140489", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"ขวัญฤทัย เพิ่มนิ", updatedTime:"2026-09-08T00:11:49+0000", messageCount:1, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2560005821138169", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Tarn Luedeesunant", updatedTime:"2026-09-07T07:42:07+0000", messageCount:2, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1079248974795892", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"John Jindanil", updatedTime:"2026-09-06T12:49:32+0000", messageCount:14, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_9581284568667615", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Milk MilkiizBaa", updatedTime:"2026-09-05T07:53:47+0000", messageCount:13, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2055818171719203", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"J Nopparat Nonnok", updatedTime:"2026-09-05T07:20:22+0000", messageCount:9, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1071528691926435", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Harri Elliott", updatedTime:"2026-09-01T12:49:41+0000", messageCount:1, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2155035938783401", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Ford Jang Keun Suk", updatedTime:"2026-08-31T04:35:26+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2298024384274961", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Cherdchai Numyuang", updatedTime:"2026-08-30T05:05:45+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1650996639926396", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Chung Wu Hsiung", updatedTime:"2026-08-30T02:09:25+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_923136780864132", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"ไอริน ไอรัก", updatedTime:"2026-08-29T03:51:48+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_24081872854750112", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"วรรัตน์ อาภาสกุลเดช", updatedTime:"2026-08-28T01:30:34+0000", messageCount:18, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_870829932578876", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Kyaw Sein Sein", updatedTime:"2026-08-24T02:47:25+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_31909094462023003", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"ศิรินันท์ ภิรมย์ประเมศ", updatedTime:"2026-06-26T03:57:02+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_122264631506033931", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"สิริพร อภิรักษ์จรรยา", updatedTime:"2026-06-16T04:25:08+0000", messageCount:3, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_122151582374954318", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"ชดากาญ์ ปั้นศรี", updatedTime:"2026-06-13T03:34:00+0000", messageCount:3, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_669157252793567", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"ณัฐชา เรืองธรรมรงค์", updatedTime:"2026-06-06T22:56:20+0000", messageCount:3, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_122106054333066029", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"เว้า พุ้งปี๊ด", updatedTime:"2026-06-03T08:31:29+0000", messageCount:3, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_30356582423990437", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Aom Sch", updatedTime:"2026-05-27T06:57:12+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_122169391382748386", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"พิมลวรรณ สุขเนตร", updatedTime:"2026-05-22T05:37:20+0000", messageCount:5, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_3714220325551779", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Aranya Jantakad", updatedTime:"2026-05-18T06:32:17+0000", messageCount:101, content:null, addLine:false, suggestedStatus:null},
 ];
 
 // ---------- state ----------
@@ -627,8 +673,11 @@ function renderAudienceDetail(name, project){
           <td>${addLineHtml}</td>
         </tr>`;
     }).join('');
+  const mixedPageNote = project === 'mono'
+    ? ' · เพจ "Chanuntorn Development Group" นี้เคยรับแชทของทั้งโปรเจค Mono และ Mews ปนกันมาก่อน — Meta ไม่มีช่องทางให้ดึงย้อนหลังว่าแชทแต่ละอันทักมาจากโฆษณา ID ไหน (ข้อมูลนี้ส่งมาทาง webhook แบบเรียลไทม์ตอนแชทเริ่มเท่านั้น ไม่ใช่ข้อมูลที่ค้นย้อนหลังผ่าน API ได้ จึงแยก Mono/Mews จากแชทเก่าที่ดึงมาแล้วไม่ได้) ตอนนี้โปรเจค Mews มีเพจแชทของตัวเองแยกแล้ว ("Mews พระราม 2 - บางขุนเทียน") แชทใหม่ๆ ของ Mews จึงจะไม่ปนมาที่นี่อีก'
+    : '';
   return `
-    <div class="aud-detail-note">แชทที่ดึงมาจาก Meta ทั้งหมด ${fmtInt(rows.length)} รายการสำหรับเพจนี้ — Meta ไม่ส่งข้อมูลอ้างอิงกลับไปที่กลุ่มเป้าหมาย/แคมเปญของแต่ละแชทย้อนหลัง จึงแสดงแชทจริงทั้งหมดของโปรเจคนี้ (ไม่ได้กรองเฉพาะกลุ่มเป้าหมายนี้) · "คอนเทนต์ที่ทัก" ระบุย้อนหลังไม่ได้ด้วยเหตุผลเดียวกัน · คลิก Qualify / Non-Qualify / Walk-in เพื่อยืนยันเอง (รีเซ็ตเมื่อรีเฟรชหน้า) · 💡 = สถานะที่บอทแชทของคุณแท็กไว้อัตโนมัติในข้อความ (จากคำว่า "มีคุณสมบัติ" / "มาถึงโครงการ") เป็นแค่คำแนะนำ ไม่ได้ยืนยันแทนคุณ · Add-Line ตรวจสอบจากข้อความ 15 รายการล่าสุดของแต่ละแชทแล้วไม่พบคำว่าไลน์เลยสักแชท (ระบบแชทนี้อาจไม่ใช้ปุ่ม Add-Line หรืออยู่นอกช่วงข้อความที่ดึงมา — บอกผมได้ถ้ามีคำที่ควรค้นหาเพิ่ม)</div>
+    <div class="aud-detail-note">แชทที่ดึงมาจาก Meta ทั้งหมด ${fmtInt(rows.length)} รายการสำหรับเพจนี้ — Meta ไม่ส่งข้อมูลอ้างอิงกลับไปที่กลุ่มเป้าหมาย/แคมเปญของแต่ละแชทย้อนหลัง จึงแสดงแชทจริงทั้งหมดของโปรเจคนี้ (ไม่ได้กรองเฉพาะกลุ่มเป้าหมายนี้) · "คอนเทนต์ที่ทัก" ระบุย้อนหลังไม่ได้ด้วยเหตุผลเดียวกัน · คลิก Qualify / Non-Qualify / Walk-in เพื่อยืนยันเอง (รีเซ็ตเมื่อรีเฟรชหน้า) · 💡 = สถานะที่บอทแชทของคุณแท็กไว้อัตโนมัติในข้อความ (จากคำว่า "มีคุณสมบัติ" / "มาถึงโครงการ") เป็นแค่คำแนะนำ ไม่ได้ยืนยันแทนคุณ · Add-Line ตรวจสอบจากข้อความ 15 รายการล่าสุดของแต่ละแชทแล้วไม่พบคำว่าไลน์เลยสักแชท (ระบบแชทนี้อาจไม่ได้ใช้ปุ่ม Add-Line หรืออยู่นอกช่วงข้อความที่ดึงมา — บอกผมได้ถ้ามีคำที่ควรค้นหาเพิ่ม)${mixedPageNote}</div>
     <div class="brk-scroll">
       <table class="brk-table">
         <thead>
@@ -654,10 +703,12 @@ function renderAudienceRows(){
     const walkinCount = chats.filter(c => chatStatus.get(c.id) === 'walkin').length;
     const addLineCount = chats.filter(c => c.addLine === true).length;
     const isOpen = openAudiences.has(name);
+    const days = daysRunningFor(name);
+    const daysHtml = days !== null ? `<div class="aud-days">ยิงมาแล้ว ${fmtInt(days)} วัน</div>` : '';
     return `
       <div class="aud-row" data-name="${name}" data-project="${project}" data-idx="${i}">
         <button class="aud-toggle ${isOpen?'open':''}">▸</button>
-        <div class="aud-name">${name}</div>
+        <div class="aud-name"><div>${name}</div>${daysHtml}</div>
         <div>${fmtBaht(a.spend)}${deltaBadge(a.spend, aP.spend, 'none')}</div>
         <div>${fmtInt(a.reach)}${deltaBadge(a.reach, aP.reach, 'none')}</div>
         <div>${fmtInt(a.inbox)}${deltaBadge(a.inbox, aP.inbox, 'up')}</div>
