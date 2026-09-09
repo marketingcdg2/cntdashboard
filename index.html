@@ -121,17 +121,17 @@
   /* standard tables (objective / content) */
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th {
-    text-align: right; font-weight: 600; color: var(--text-secondary);
+    text-align: left; font-weight: 600; color: var(--text-secondary);
     font-size: 11.5px; text-transform: uppercase; letter-spacing: .02em;
     padding: 8px 10px; border-bottom: 1px solid var(--border);
   }
   thead th:first-child, tbody td:first-child { text-align: left; }
-  tbody td { padding: 10px 10px; text-align: right; border-bottom: 1px solid var(--gridline); font-variant-numeric: tabular-nums; }
+  tbody td { padding: 10px 10px; text-align: left; border-bottom: 1px solid var(--gridline); font-variant-numeric: tabular-nums; }
   tbody tr:last-child td { border-bottom: none; }
   tbody td:first-child { font-variant-numeric: normal; display:flex; align-items:center; gap:8px; }
   .dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
   .table-scroll { overflow-x: auto; }
-  tfoot td { padding: 10px 10px; font-weight: 700; border-top: 1px solid var(--border); text-align:right; font-variant-numeric: tabular-nums; }
+  tfoot td { padding: 10px 10px; font-weight: 700; border-top: 1px solid var(--border); text-align:left; font-variant-numeric: tabular-nums; }
   tfoot td:first-child { text-align:left; }
 
   /* objective summary table: first column centered badge */
@@ -148,7 +148,7 @@
     gap:8px; align-items:center; padding:10px 14px; min-width: 1180px;
   }
   .aud-head-row { font-size:11px; text-transform:uppercase; letter-spacing:.02em; color:var(--text-secondary); border-bottom:1px solid var(--border); font-weight:600; }
-  .aud-head-row > div, .aud-row > div { text-align:right; }
+  .aud-head-row > div, .aud-row > div { text-align:left; }
   .aud-head-row > div:first-child, .aud-head-row > div:nth-child(2) { text-align:left; }
   .aud-row { border-bottom:1px solid var(--gridline); font-size:13px; font-variant-numeric: tabular-nums; cursor:pointer; }
   .aud-row:hover { background: var(--page-plane); }
@@ -162,9 +162,9 @@
   .aud-detail-note { font-size:11.5px; color:var(--text-secondary); margin: 4px 0 8px; }
   .brk-scroll { max-height: 420px; overflow-y:auto; overflow-x:auto; border:1px solid var(--border); border-radius:8px; }
   .brk-table { width:100%; border-collapse:collapse; font-size:12.5px; min-width: 720px; }
-  .brk-table thead th { position:sticky; top:0; background:var(--surface-1); text-align:right; font-size:10.5px; text-transform:uppercase; color:var(--text-secondary); padding:7px 9px; border-bottom:1px solid var(--border); }
+  .brk-table thead th { position:sticky; top:0; background:var(--surface-1); text-align:left; font-size:10.5px; text-transform:uppercase; color:var(--text-secondary); padding:7px 9px; border-bottom:1px solid var(--border); }
   .brk-table thead th:nth-child(1), .brk-table thead th:nth-child(2), .brk-table thead th:nth-child(3) { text-align:left; }
-  .brk-table td { padding:7px 9px; text-align:right; border-bottom:1px solid var(--gridline); font-variant-numeric: tabular-nums; }
+  .brk-table td { padding:7px 9px; text-align:left; border-bottom:1px solid var(--gridline); font-variant-numeric: tabular-nums; }
   .brk-table td:nth-child(1), .brk-table td:nth-child(2), .brk-table td:nth-child(3) { text-align:left; font-variant-numeric:normal; }
   .brk-table tbody tr:last-child td { border-bottom:none; }
 
