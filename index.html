@@ -144,8 +144,8 @@
   .aud-table { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
   .aud-table-scroll { overflow-x: auto; }
   .aud-head-row, .aud-row {
-    display:grid; grid-template-columns: 26px 1.9fr 1.1fr 1fr 0.8fr 1.1fr 0.9fr 0.9fr;
-    gap:8px; align-items:center; padding:10px 14px; min-width: 1000px;
+    display:grid; grid-template-columns: 26px 1.9fr 1.1fr 1fr 0.8fr 0.9fr 0.9fr 1.1fr 0.9fr 0.9fr;
+    gap:8px; align-items:center; padding:10px 14px; min-width: 1180px;
   }
   .aud-head-row { font-size:11px; text-transform:uppercase; letter-spacing:.02em; color:var(--text-secondary); border-bottom:1px solid var(--border); font-weight:600; }
   .aud-head-row > div, .aud-row > div { text-align:right; }
@@ -168,18 +168,15 @@
   .brk-table td:nth-child(1), .brk-table td:nth-child(2), .brk-table td:nth-child(3) { text-align:left; font-variant-numeric:normal; }
   .brk-table tbody tr:last-child td { border-bottom:none; }
 
-  /* chat status cells inside the chat breakdown table */
-  .chip-cell { display:inline-block; font-size:12px; font-weight:700; padding:3px 8px; border-radius:6px; cursor:pointer; border:1px solid transparent; }
-  .chip-cell.off { color: var(--text-muted); background:none; }
-  .chip-cell.off:hover { border-color: var(--border); }
-  .chip-cell.qualify.on { color: var(--good-strong); background: color-mix(in srgb, var(--good-strong) 16%, transparent); }
-  .chip-cell.nonqualify.on { color: var(--bad); background: color-mix(in srgb, var(--bad) 16%, transparent); }
-  .walkin-btn {
+  /* chat status buttons inside the chat breakdown table (Qualify / Non-Qualify / Walk-in) */
+  .status-btn {
     font-size:11.5px; padding:5px 10px; border-radius:7px; border:1px solid var(--border);
     background:var(--surface-1); color:var(--text-secondary); cursor:pointer; font-family:inherit; font-weight:600; white-space:nowrap;
   }
-  .walkin-btn:hover { border-color: var(--series-1); }
+  .status-btn:hover { border-color: var(--series-1); }
   .walkin-btn.on { background: color-mix(in srgb, var(--good-strong) 18%, var(--surface-1)); border-color:var(--good-strong); color:var(--good-strong); }
+  .qualify-btn.on { background: color-mix(in srgb, var(--good-strong) 18%, var(--surface-1)); border-color:var(--good-strong); color:var(--good-strong); }
+  .nonqualify-btn.on { background: color-mix(in srgb, var(--bad) 18%, var(--surface-1)); border-color:var(--bad); color:var(--bad); }
   .addline-yes { color: var(--good-strong); font-weight:700; }
   .addline-pending { color: var(--text-muted); font-size:11px; }
   .suggest-hint { font-size:10.5px; color: var(--series-4); margin-top:2px; font-weight:600; }
@@ -251,7 +248,7 @@
   <div class="section-note">กลุ่มเป้าหมาย (Ad Set) ชื่อเดียวกันที่ใช้ซ้ำในหลายแคมเปญถูกรวมยอดไว้แถวเดียวกัน · คลิกที่แถวเพื่อดูรายชื่อแชทจริงจาก Messenger — Qualify/Non-Qualify/Walk-in กดยืนยันเอง, Add-Line ตรวจจับอัตโนมัติ</div>
   <div class="aud-table aud-table-scroll">
     <div class="aud-head-row">
-      <div></div><div>กลุ่มเป้าหมาย</div><div>Spend</div><div>Reach</div><div>Inbox</div><div>Cost / Inbox</div><div>Walk-in</div><div>Add-Line</div>
+      <div></div><div>กลุ่มเป้าหมาย</div><div>Spend</div><div>Reach</div><div>Inbox</div><div>Qualify</div><div>Non-Qualify</div><div>Cost / Inbox</div><div>Walk-in</div><div>Add-Line</div>
     </div>
     <div id="audRows"></div>
   </div>
@@ -667,9 +664,9 @@ function renderAudienceDetail(name, project){
           <td>${c.customerName || ('แชท #' + String(c.id).slice(-6))}${hintHtml}</td>
           <td>${c.pageName || pageNameFor(c.page)}</td>
           <td>${c.content || naDash}</td>
-          <td><span class="chip-cell qualify ${st==='qualify'?'on':'off'}" data-key="qualify">${st==='qualify' ? '✓' : '–'}</span></td>
-          <td><span class="chip-cell nonqualify ${st==='nonqualify'?'on':'off'}" data-key="nonqualify">${st==='nonqualify' ? '✓' : '–'}</span></td>
-          <td><button type="button" class="walkin-btn ${st==='walkin'?'on':''}" data-key="walkin">${st==='walkin' ? '✓ Walk-in แล้ว' : 'ทำเครื่องหมาย Walk-in'}</button></td>
+          <td><button type="button" class="status-btn qualify-btn ${st==='qualify'?'on':''}" data-key="qualify">${st==='qualify' ? '✓ Qualify แล้ว' : 'ทำเครื่องหมาย Qualify'}</button></td>
+          <td><button type="button" class="status-btn nonqualify-btn ${st==='nonqualify'?'on':''}" data-key="nonqualify">${st==='nonqualify' ? '✓ Non-Qualify แล้ว' : 'ทำเครื่องหมาย Non-Qualify'}</button></td>
+          <td><button type="button" class="status-btn walkin-btn ${st==='walkin'?'on':''}" data-key="walkin">${st==='walkin' ? '✓ Walk-in แล้ว' : 'ทำเครื่องหมาย Walk-in'}</button></td>
           <td>${addLineHtml}</td>
         </tr>`;
     }).join('');
@@ -700,6 +697,8 @@ function renderAudienceRows(){
     const a = agg(groupRows), aP = agg(mapC.get(name) || []);
     const project = groupRows[0] ? groupRows[0].project : selectedProject;
     const chats = chatsForProject(project);
+    const qualifyCount = chats.filter(c => chatStatus.get(c.id) === 'qualify').length;
+    const nonQualifyCount = chats.filter(c => chatStatus.get(c.id) === 'nonqualify').length;
     const walkinCount = chats.filter(c => chatStatus.get(c.id) === 'walkin').length;
     const addLineCount = chats.filter(c => c.addLine === true).length;
     const isOpen = openAudiences.has(name);
@@ -712,6 +711,8 @@ function renderAudienceRows(){
         <div>${fmtBaht(a.spend)}${deltaBadge(a.spend, aP.spend, 'none')}</div>
         <div>${fmtInt(a.reach)}${deltaBadge(a.reach, aP.reach, 'none')}</div>
         <div>${fmtInt(a.inbox)}${deltaBadge(a.inbox, aP.inbox, 'up')}</div>
+        <div>${chats.length ? fmtInt(qualifyCount) : naDash}</div>
+        <div>${chats.length ? fmtInt(nonQualifyCount) : naDash}</div>
         <div>${fmtCPI(a.spend, a.inbox)}${deltaCPI(a.spend, a.inbox, aP.spend, aP.inbox, 'down')}</div>
         <div>${chats.length ? fmtInt(walkinCount) : naDash}</div>
         <div>${chats.length ? fmtInt(addLineCount) : naDash}</div>
@@ -723,6 +724,8 @@ function renderAudienceRows(){
 
   const totalA = agg(primaryRows), totalAP = agg(comparisonRows);
   const totalChats = chatsForProject();
+  const totalQualify = totalChats.filter(c => chatStatus.get(c.id) === 'qualify').length;
+  const totalNonQualify = totalChats.filter(c => chatStatus.get(c.id) === 'nonqualify').length;
   const totalWalkin = totalChats.filter(c => chatStatus.get(c.id) === 'walkin').length;
   const totalAddLine = totalChats.filter(c => c.addLine === true).length;
   const totalsHtml = `
@@ -732,6 +735,8 @@ function renderAudienceRows(){
       <div>${fmtBaht(totalA.spend)}${deltaBadge(totalA.spend, totalAP.spend, 'none')}</div>
       <div>${fmtInt(totalA.reach)}${deltaBadge(totalA.reach, totalAP.reach, 'none')}</div>
       <div>${fmtInt(totalA.inbox)}${deltaBadge(totalA.inbox, totalAP.inbox, 'up')}</div>
+      <div>${totalChats.length ? fmtInt(totalQualify) : naDash}</div>
+      <div>${totalChats.length ? fmtInt(totalNonQualify) : naDash}</div>
       <div>${fmtCPI(totalA.spend, totalA.inbox)}${deltaCPI(totalA.spend, totalA.inbox, totalAP.spend, totalAP.inbox, 'down')}</div>
       <div>${totalChats.length ? fmtInt(totalWalkin) : naDash}</div>
       <div>${totalChats.length ? fmtInt(totalAddLine) : naDash}</div>
@@ -743,7 +748,7 @@ function renderAudienceRows(){
 // ---------- delegated interactions (row expand + chat status clicks) ----------
 document.getElementById('audRows').addEventListener('click', (e) => {
   // chat status controls inside an open detail panel
-  const statusEl = e.target.closest('.chip-cell, .walkin-btn');
+  const statusEl = e.target.closest('.status-btn');
   if (statusEl){
     const tr = statusEl.closest('tr[data-chat-id]');
     if (tr){
