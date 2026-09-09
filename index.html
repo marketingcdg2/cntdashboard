@@ -626,29 +626,35 @@ function classifyObjective(campaignName){
 }
 
 // ================= real ad set start dates (fetched from Meta Marketing API, adset.start_time) =================
-// Keyed by ad set name exactly as it appears in the rows above. When the same ad set name is reused across
-// multiple campaigns/ad accounts (e.g. Mews ad sets that exist in both Mews ad accounts), the EARLIEST
-// start_time across all of them is used, since that's when this audience first started running.
+// Keyed by "project::ad set name" — NOT by name alone. A handful of ad set names (e.g. "Lookalike 1%",
+// "[lifestyle]_[local /CBD]_[interest-audience]") are reused independently in both Mono and Mews with
+// completely different actual start dates, so a name-only key would leak one project's timing into the
+// other's "days running" figure and chat time-attribution. Where a name is reused within the SAME project
+// (multiple campaigns/instances sharing one ad set name), the EARLIEST start_time among them is used.
 const adsetStartTime = {
-  'Add Interest + business onwer+lifes tyle]_[local/ CBD]_[inter est audience': '2026-08-21T13:38:09+07:00',
-  'Data_Lookalike1%': '2026-09-05T11:52:45+07:00',
-  'Life Style + Realestate + Investment + Whitecollar]_[local/CBD]_[intere st-audience]': '2026-08-21T17:46:18+07:00',
-  'Lifestyle': '2026-09-05T12:15:45+07:00',
-  'Lookalike 1%': '2026-08-21T13:38:17+07:00',
-  'Lookalike1%': '2026-08-28T02:36:48+07:00',
-  'Re-target': '2026-09-05T11:57:01+07:00',
-  'RealEs+BusinessOwer+Inves+Lifetyle': '2026-09-05T11:47:35+07:00',
-  '[All interest : Life Style + Realestate + Investment + Whitecollar]_[local/CBD]_[intere st-audience]': '2026-08-06T08:54:35+07:00',
-  '[Investment+realestate+w hite collar]_[local/CBD]_[interes t-audience]': '2026-08-06T09:32:03+07:00',
-  '[business onwer+lifes tyle]_[local/ CBD]_[inter est audience]': '2026-08-21T13:38:08+07:00',
-  '[lifestyle]_[local /CBD]_[interest-audience]': '2026-08-05T18:22:00+07:00',
-  '[lifestyle]_[local/CBD]_[inte rest-audience]': '2026-08-06T09:38:48+07:00',
-  '[lookalike 1%]_[local/CBD] _[interest audience]': '2026-08-05T18:39:48+07:00',
-  '[lookalike 2%]_[local/CBD]_[interest audience]': '2026-08-06T08:59:49+07:00',
-  'real estate+investment+white collar': '2026-08-05T16:26:54+07:00',
+  'mono::Life Style + Realestate + Investment + Whitecollar]_[local/CBD]_[intere st-audience]': '2026-08-21T17:46:18+07:00',
+  'mono::[All interest : Life Style + Realestate + Investment + Whitecollar]_[local/CBD]_[intere st-audience]': '2026-08-06T08:54:35+07:00',
+  'mono::[Investment+realestate+w hite collar]_[local/CBD]_[interes t-audience]': '2026-08-06T09:32:03+07:00',
+  'mono::[lifestyle]_[local /CBD]_[interest-audience]': '2026-08-05T18:22:00+07:00',
+  'mono::[lifestyle]_[local/CBD]_[inte rest-audience]': '2026-08-06T09:38:48+07:00',
+  'mono::[lookalike 1%]_[local/CBD] _[interest audience]': '2026-08-05T18:39:48+07:00',
+  'mono::[lookalike 2%]_[local/CBD]_[interest audience]': '2026-08-06T08:59:49+07:00',
+  'mono::real estate+investment+white collar': '2026-08-05T16:26:54+07:00',
+  'mews::Add Interest + business onwer+lifes tyle]_[local/ CBD]_[inter est audience': '2026-08-21T13:38:09+07:00',
+  'mews::Data_Lookalike1%': '2026-09-05T11:52:45+07:00',
+  'mews::Lifestyle': '2026-09-05T12:15:45+07:00',
+  'mews::Lookalike 1%': '2026-08-21T13:38:17+07:00',
+  'mews::Lookalike1%': '2026-08-28T02:36:48+07:00',
+  'mews::Re-target': '2026-09-05T11:57:01+07:00',
+  'mews::RealEs+BusinessOwer+Inves+Lifetyle': '2026-09-05T11:47:35+07:00',
+  'mews::[business onwer+lifes tyle]_[local/ CBD]_[inter est audience]': '2026-08-21T13:38:08+07:00',
+  'mews::[lifestyle]_[local /CBD]_[interest-audience]': '2026-08-21T14:04:15+07:00',
 };
-function daysRunningFor(adsetName){
-  const iso = adsetStartTime[adsetName];
+function startTimeFor(project, name){
+  return adsetStartTime[project + '::' + name] || null;
+}
+function daysRunningFor(adsetName, project){
+  const iso = startTimeFor(project, adsetName);
   if (!iso) return null;
   const start = new Date(iso);
   if (isNaN(start)) return null;
@@ -921,14 +927,14 @@ function activeAudienceWindows(project){
   const names = new Set();
   ALL_PRIMARY.concat(ALL_COMPARISON).forEach(r => { if (r.project === project) names.add(r.adset); });
   return [...names]
-    .filter(n => adsetStartTime[n])
-    .map(n => ({ name: n, start: new Date(adsetStartTime[n]).getTime() }))
+    .filter(n => startTimeFor(project, n))
+    .map(n => ({ name: n, start: new Date(startTimeFor(project, n)).getTime() }))
     .sort((a, b) => a.start - b.start);
 }
 function chatsForAudience(name, project){
   const all = chatsForProject(project);
   const windows = activeAudienceWindows(project);
-  if (windows.length === 0 || !adsetStartTime[name]) return all;
+  if (windows.length === 0 || !startTimeFor(project, name)) return all;
   return all.filter(c => {
     const t = new Date(c.updatedTime).getTime();
     if (isNaN(t)) return false;
@@ -944,7 +950,7 @@ function chatsForAudience(name, project){
 // PROJECT (page) — not filtered down to that specific ad set. That's flagged in the detail note below.
 function renderAudienceDetail(name, project){
   const rows = chatsForAudience(name, project);
-  const timeAttributed = activeAudienceWindows(project).length > 0 && !!adsetStartTime[name];
+  const timeAttributed = activeAudienceWindows(project).length > 0 && !!startTimeFor(project, name);
   const rowsHtml = rows
     .slice()
     .sort((a,b) => new Date(b.updatedTime) - new Date(a.updatedTime))
@@ -1003,7 +1009,7 @@ function renderAudienceRows(){
     const walkinCount = chats.filter(c => chatStatus.get(c.id) === 'walkin').length;
     const addLineCount = chats.filter(c => c.addLine === true).length;
     const isOpen = openAudiences.has(name);
-    const days = daysRunningFor(name);
+    const days = daysRunningFor(name, project);
     const daysHtml = days !== null ? `<div class="aud-days">ยิงมาแล้ว ${fmtInt(days)} วัน</div>` : '';
     return `
       <div class="aud-row" data-name="${name}" data-project="${project}" data-idx="${i}">
