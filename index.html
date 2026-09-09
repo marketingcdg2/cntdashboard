@@ -181,6 +181,7 @@
   .walkin-btn.on { background: color-mix(in srgb, var(--good-strong) 18%, var(--surface-1)); border-color:var(--good-strong); color:var(--good-strong); }
   .addline-yes { color: var(--good-strong); font-weight:700; }
   .addline-pending { color: var(--text-muted); font-size:11px; }
+  .suggest-hint { font-size:10.5px; color: var(--series-4); margin-top:2px; font-weight:600; }
 
   .footnote { color: var(--text-muted); font-size: 11.5px; margin-top: 20px; text-align:center; }
   .table-footnote { color: var(--text-muted); font-size: 11px; margin-top: 8px; }
@@ -219,7 +220,7 @@
       <span class="control-label">ช่วงที่ดู</span>
       <b>10 ส.ค. – 8 ก.ย. 2569</b> <span class="sep">(30 วันล่าสุด)</span>
       <span class="sep">เทียบกับ</span>
-      <b>11 ก.ค. – 9 ส.ค. 2569</b> <span class="sep">(30 วันก่อนหน้า)</span>
+      <b>11 ก.ค. – 9 ก.ย. 2569</b> <span class="sep">(30 วันก่อนหน้า)</span>
     </div>
   </div>
 
@@ -362,7 +363,7 @@ const rowsMewsPrimary = [
 ];
 
 // both Mews ad accounts had literally zero spend / null reach across every ad in the
-// comparison period (11 ก.ค.–9 ส.ค.) — genuinely new activity, not a data gap.
+// comparison period (11 ก.ค.–9 ก.ย.) — genuinely new activity, not a data gap.
 const rowsMewsComparison = rowsMewsPrimary.map(r => ({...r, spend:0, reach:0, inbox:0}));
 
 const ALL_PRIMARY = [...rowsMonoPrimary, ...rowsMewsPrimary];
@@ -386,6 +387,56 @@ function classifyObjective(campaignName){
 // { id, page:'mono'|'mews', pageName, customerName, content, updatedTime, messageCount, addLine: true|false|null }
 // addLine: true = detected an Add-Line click in the message text, false = checked, not found, null = message content not fetched yet
 const chatsRaw = [
+  {id:"t_1810449640300009", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Anuwong Nareesawat", updatedTime:"2026-09-09T00:11:19+0000", messageCount:15, content:null, addLine:false, suggestedStatus:"walkin"},
+  {id:"t_10158569817948422", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Papas Karuhaphanvanich", updatedTime:"2026-09-08T13:36:22+0000", messageCount:14, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_26552469971061918", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Meng Mugen", updatedTime:"2026-09-08T10:45:33+0000", messageCount:8, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1396637188599038", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Mai Hirunyalekha", updatedTime:"2026-09-08T04:39:49+0000", messageCount:21, content:null, addLine:false, suggestedStatus:"walkin"},
+  {id:"t_945700601908511", page:"mono", pageName:"Chanuntorn Development Group", customerName:"ธันยภัทร์ เกด", updatedTime:"2026-09-08T04:01:49+0000", messageCount:18, content:null, addLine:false, suggestedStatus:"qualify"},
+  {id:"t_6453597924735093", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Yingsom Benjamas", updatedTime:"2026-09-08T03:18:34+0000", messageCount:12, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1100375006064565", page:"mono", pageName:"Chanuntorn Development Group", customerName:"ศุ ภา", updatedTime:"2026-09-07T10:50:18+0000", messageCount:36, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1354111300042126", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Phasinee Chaiyarad Ness", updatedTime:"2026-09-07T08:06:27+0000", messageCount:2, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1538422924278963", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Ceo Tan", updatedTime:"2026-09-07T04:16:08+0000", messageCount:8, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_835430205892929", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Nitesh Jain", updatedTime:"2026-09-06T13:55:40+0000", messageCount:22, content:null, addLine:false, suggestedStatus:"qualify"},
+  {id:"t_2164586164936987", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Chaitiphong Boonrakan", updatedTime:"2026-09-06T13:27:35+0000", messageCount:20, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2148797122182043", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Anna Proh", updatedTime:"2026-09-06T13:22:16+0000", messageCount:9, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1726003785292082", page:"mono", pageName:"Chanuntorn Development Group", customerName:"ชัยวัฒน์ บุญรุย", updatedTime:"2026-09-06T12:02:08+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_26388796544137823", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Aoae Siriporn", updatedTime:"2026-09-05T10:36:12+0000", messageCount:8, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1531021869044144", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Manatsanan Techasap", updatedTime:"2026-09-04T08:39:35+0000", messageCount:5, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1663494555294792", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Schatz Fangg G", updatedTime:"2026-09-04T04:55:07+0000", messageCount:20, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1398913079047854", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Ditzamak Pokpok", updatedTime:"2026-09-03T10:56:10+0000", messageCount:9, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_28188985657427295", page:"mono", pageName:"Chanuntorn Development Group", customerName:"พี่เนย น้องไนซ์", updatedTime:"2026-09-03T10:36:04+0000", messageCount:24, content:null, addLine:false, suggestedStatus:"qualify"},
+  {id:"t_1608937507609150", page:"mono", pageName:"Chanuntorn Development Group", customerName:"คุณชาย ต่อ", updatedTime:"2026-09-03T04:37:48+0000", messageCount:25, content:null, addLine:false, suggestedStatus:"qualify"},
+  {id:"t_1682253273233034", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Nanthaporn Wanchan", updatedTime:"2026-09-03T03:18:42+0000", messageCount:9, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1777776670015079", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Bank Thanakorn", updatedTime:"2026-09-03T02:10:50+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1890159229035292", page:"mono", pageName:"Chanuntorn Development Group", customerName:"นิธิศ คงศรี", updatedTime:"2026-09-03T01:02:01+0000", messageCount:9, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2305026630268116", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Supranee Kaewmek", updatedTime:"2026-09-02T11:56:34+0000", messageCount:9, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2280181562793212", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Thanakrit Pliensuk", updatedTime:"2026-09-02T04:40:22+0000", messageCount:6, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1046125944969926", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Pyaephyo Aung", updatedTime:"2026-09-02T04:40:09+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_4139497739516396", page:"mono", pageName:"Chanuntorn Development Group", customerName:"จะหลุดจะรั่ว ก็ตัวกู", updatedTime:"2026-09-02T01:40:10+0000", messageCount:11, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_4634221940155636", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Pradit Kanbuebut", updatedTime:"2026-09-02T01:39:45+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1619222196526500", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Zelf Slaved", updatedTime:"2026-09-01T07:37:31+0000", messageCount:27, content:null, addLine:false, suggestedStatus:"qualify"},
+  {id:"t_1385664667003562", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Ma Than Kyi", updatedTime:"2026-09-01T03:58:23+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2252759608459486", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Pete Natdanai", updatedTime:"2026-08-31T23:30:28+0000", messageCount:5, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_7135233449856560", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Wichit Manee", updatedTime:"2026-08-31T07:24:02+0000", messageCount:11, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1779295616408733", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Mild Natthapat", updatedTime:"2026-08-31T06:27:54+0000", messageCount:17, content:null, addLine:false, suggestedStatus:"qualify"},
+  {id:"t_8937819826264068", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Natcha Kaitin", updatedTime:"2026-08-31T05:44:38+0000", messageCount:28, content:null, addLine:false, suggestedStatus:"qualify"},
+  {id:"t_1075282361492147", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Pock MB", updatedTime:"2026-08-31T04:07:00+0000", messageCount:7, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1599977548274745", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Mukarin Na Thalang", updatedTime:"2026-08-31T02:40:59+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1569083624700753", page:"mono", pageName:"Chanuntorn Development Group", customerName:"S Wor", updatedTime:"2026-08-31T01:40:09+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1391360085661529", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Wachiraporn Wijanjit", updatedTime:"2026-08-30T12:40:21+0000", messageCount:6, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2271410723623839", page:"mono", pageName:"Chanuntorn Development Group", customerName:"สุดทางฝัน ที่ปลายฟ้า", updatedTime:"2026-08-30T10:39:20+0000", messageCount:12, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1726837068601206", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Chayaya Boonpun", updatedTime:"2026-08-30T06:50:08+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_4305221503123395", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Warada Chaichanapron", updatedTime:"2026-08-30T06:49:42+0000", messageCount:9, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1094858106532437", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Sagitarius Tsubasa", updatedTime:"2026-08-29T14:06:37+0000", messageCount:11, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1884748529597690", page:"mono", pageName:"Chanuntorn Development Group", customerName:"เนย สุชานันท์", updatedTime:"2026-08-29T13:33:51+0000", messageCount:5, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2239676163478301", page:"mono", pageName:"Chanuntorn Development Group", customerName:"ป้องกันฯ ป้องกันฯ", updatedTime:"2026-08-29T05:31:04+0000", messageCount:2, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1646583463732058", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Penporn May", updatedTime:"2026-08-29T00:20:08+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_28928532546743939", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Khun Song", updatedTime:"2026-08-29T00:13:15+0000", messageCount:6, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_27384123674508999", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Chayanut Khamkhen", updatedTime:"2026-08-28T15:53:23+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_304759125111755", page:"mono", pageName:"Chanuntorn Development Group", customerName:"April Aries", updatedTime:"2026-08-28T06:59:26+0000", messageCount:13, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1599421005163886", page:"mono", pageName:"Chanuntorn Development Group", customerName:"ITon SB PJ", updatedTime:"2026-08-28T06:45:46+0000", messageCount:42, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_1837069177658559", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Yuwabee Kumngam", updatedTime:"2026-08-28T04:43:45+0000", messageCount:11, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2187905048211330", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Rainbow RK", updatedTime:"2026-08-28T04:22:16+0000", messageCount:32, content:null, addLine:false, suggestedStatus:null},
 ];
 
 // ---------- state ----------
@@ -563,9 +614,11 @@ function renderAudienceDetail(name, project){
       const addLineHtml = c.addLine === true ? '<span class="addline-yes">✓</span>'
         : c.addLine === false ? naDash
         : '<span class="addline-pending">รอข้อมูล</span>';
+      const suggestLabel = { qualify: 'Qualify', walkin: 'Walk-in' }[c.suggestedStatus] || null;
+      const hintHtml = (suggestLabel && !st) ? `<div class="suggest-hint">💡 บอทแท็กไว้ว่า ${suggestLabel}</div>` : '';
       return `
         <tr data-chat-id="${c.id}">
-          <td>${c.customerName || ('แชท #' + String(c.id).slice(-6))}</td>
+          <td>${c.customerName || ('แชท #' + String(c.id).slice(-6))}${hintHtml}</td>
           <td>${c.pageName || pageNameFor(c.page)}</td>
           <td>${c.content || naDash}</td>
           <td><span class="chip-cell qualify ${st==='qualify'?'on':'off'}" data-key="qualify">${st==='qualify' ? '✓' : '–'}</span></td>
@@ -575,7 +628,7 @@ function renderAudienceDetail(name, project){
         </tr>`;
     }).join('');
   return `
-    <div class="aud-detail-note">แชทที่ดึงมาจาก Meta ทั้งหมด ${fmtInt(rows.length)} รายการสำหรับเพจนี้ — Meta ไม่ส่งข้อมูลอ้างอิงกลับไปที่กลุ่มเป้าหมาย/แคมเปญของแต่ละแชทย้อนหลัง จึงแสดงแชทจริงทั้งหมดของโปรเจคนี้ (ไม่ได้กรองเฉพาะกลุ่มเป้าหมายนี้) · "คอนเทนต์ที่ทัก" ระบุย้อนหลังไม่ได้ด้วยเหตุผลเดียวกัน · คลิก Qualify / Non-Qualify / Walk-in เพื่อยืนยันเอง (รีเซ็ตเมื่อรีเฟรชหน้า) · Add-Line ตรวจจับจากข้อความอัตโนมัติ</div>
+    <div class="aud-detail-note">แชทที่ดึงมาจาก Meta ทั้งหมด ${fmtInt(rows.length)} รายการสำหรับเพจนี้ — Meta ไม่ส่งข้อมูลอ้างอิงกลับไปที่กลุ่มเป้าหมาย/แคมเปญของแต่ละแชทย้อนหลัง จึงแสดงแชทจริงทั้งหมดของโปรเจคนี้ (ไม่ได้กรองเฉพาะกลุ่มเป้าหมายนี้) · "คอนเทนต์ที่ทัก" ระบุย้อนหลังไม่ได้ด้วยเหตุผลเดียวกัน · คลิก Qualify / Non-Qualify / Walk-in เพื่อยืนยันเอง (รีเซ็ตเมื่อรีเฟรชหน้า) · 💡 = สถานะที่บอทแชทของคุณแท็กไว้อัตโนมัติในข้อความ (จากคำว่า "มีคุณสมบัติ" / "มาถึงโครงการ") เป็นแค่คำแนะนำ ไม่ได้ยืนยันแทนคุณ · Add-Line ตรวจสอบจากข้อความ 15 รายการล่าสุดของแต่ละแชทแล้วไม่พบคำว่าไลน์เลยสักแชท (ระบบแชทนี้อาจไม่ใช้ปุ่ม Add-Line หรืออยู่นอกช่วงข้อความที่ดึงมา — บอกผมได้ถ้ามีคำที่ควรค้นหาเพิ่ม)</div>
     <div class="brk-scroll">
       <table class="brk-table">
         <thead>
