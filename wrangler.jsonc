@@ -1,1 +1,10 @@
-{"name": "cntdashboard", "compatibility_date": "2026-09-08", "assets": {"directory": "./", "not_found_handling": "single-page-application"}}
+{
+  "name": "cntdashboard",
+  "compatibility_date": "2026-09-08",
+  "main": "worker.js",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  }
+}

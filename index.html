@@ -68,6 +68,18 @@
     background: var(--surface-1); white-space: nowrap;
   }
   .badge.real { color: var(--good-strong); border-color: color-mix(in srgb, var(--good-strong) 45%, var(--border)); }
+  .live-fetch-btn {
+    font: inherit; cursor:pointer; font-weight:700;
+    color: var(--series-1); border-color: color-mix(in srgb, var(--series-1) 45%, var(--border));
+    background: color-mix(in srgb, var(--series-1) 10%, var(--surface-1));
+  }
+  .live-fetch-btn:hover { background: color-mix(in srgb, var(--series-1) 18%, var(--surface-1)); }
+  .live-fetch-btn:disabled { opacity:.6; cursor:wait; }
+  .live-fetch-error {
+    display:none; font-size:12.5px; color: var(--bad); background: color-mix(in srgb, var(--bad) 10%, var(--surface-1));
+    border:1px solid color-mix(in srgb, var(--bad) 40%, var(--border)); border-radius:10px; padding:10px 14px; margin-bottom:14px;
+  }
+  .live-fetch-error:not([hidden]) { display:block; }
 
   /* control bars */
   .control-bar {
@@ -92,7 +104,12 @@
 
   .range-static { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13px; }
   .range-static b { font-weight:700; }
-  .range-static .sep { color:var(--text-muted); }
+  .range-static .sep, .control-group .sep { color:var(--text-muted); }
+  .date-input {
+    font: inherit; font-size:13px; padding:6px 9px; border-radius:8px;
+    border:1px solid var(--border); background:var(--page-plane); color:var(--text-primary); cursor:pointer;
+  }
+  .range-hint { flex-basis:100%; font-size:11.5px; color:var(--text-muted); }
 
   /* KPI grid */
   .kpi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 8px; }
@@ -194,9 +211,11 @@
       <div class="sub">ภาพรวมผลลัพธ์โฆษณา Meta (Facebook &amp; Instagram) — เชื่อมข้อมูลจริงจากบัญชีโฆษณา</div>
     </div>
     <div class="badge-row">
-      <span class="badge real">✅ ข้อมูลจริงจาก Meta Ads</span>
+      <button class="badge live-fetch-btn" id="fetchLiveBtn" type="button">🔄 ดึงข้อมูลสดตอนนี้</button>
+      <span class="badge real" id="dataFreshBadge">📌 ข้อมูล ณ วันที่ปรับปรุงแดชบอร์ด (ดึงด้วยมือ)</span>
     </div>
   </div>
+  <div class="live-fetch-error" id="liveFetchError" hidden></div>
 
   <div class="control-bar">
     <div class="control-group">
@@ -214,12 +233,19 @@
   </div>
 
   <div class="control-bar">
-    <div class="range-static">
-      <span class="control-label">ช่วงที่ดู</span>
-      <b>10 ส.ค. – 8 ก.ย. 2569</b> <span class="sep">(30 วันล่าสุด)</span>
-      <span class="sep">เทียบกับ</span>
-      <b>11 ก.ค. – 9 ส.ค. 2569</b> <span class="sep">(30 วันก่อนหน้า)</span>
+    <div class="control-group">
+      <span class="control-label">ช่วงหลัก</span>
+      <input type="date" id="rangePrimaryStart" class="date-input">
+      <span class="sep">–</span>
+      <input type="date" id="rangePrimaryEnd" class="date-input">
     </div>
+    <div class="control-group">
+      <span class="control-label">เทียบกับ</span>
+      <input type="date" id="rangeComparisonStart" class="date-input">
+      <span class="sep">–</span>
+      <input type="date" id="rangeComparisonEnd" class="date-input">
+    </div>
+    <div class="range-hint">เลือกช่วงวันที่เองได้อิสระ แล้วกด "ดึงข้อมูลสดตอนนี้" เพื่อดึงข้อมูลจริงตามช่วงที่เลือก (ต้องตั้งค่า Meta token บน Cloudflare ก่อนใช้งานได้จริง)</div>
   </div>
 
   <div class="kpi-grid" id="kpiGrid"></div>
@@ -584,8 +610,8 @@ const rowsMewsComparison = [
   {project:'mews',campaign:'260701_Awareness_Mews_AD_FGF',adset:'Lookalike 1%',ad:'AD_FGF',spend:1067.57,reach:73988,inbox:0},
 ];
 
-const ALL_PRIMARY = [...rowsMonoPrimary, ...rowsMewsPrimary];
-const ALL_COMPARISON = [...rowsMonoComparison, ...rowsMewsComparison];
+let ALL_PRIMARY = [...rowsMonoPrimary, ...rowsMewsPrimary];
+let ALL_COMPARISON = [...rowsMonoComparison, ...rowsMewsComparison];
 
 const projects = {
   mono: { name:'Project Mono', accounts:['783833721188530'] },
@@ -712,6 +738,16 @@ const chatsRaw = [
 let selectedProject = 'mono'; // 'mono' | 'mews'
 const openAudiences = new Set();
 const chatStatus = new Map(); // chat id -> 'qualify' | 'nonqualify' | 'walkin' | null (client-side only, resets on reload)
+
+// ---------- live fetch state ----------
+// Default ranges match the manually-pulled snapshot baked into ALL_PRIMARY/ALL_COMPARISON above.
+// Editing the date pickers only changes what gets requested next time "ดึงข้อมูลสดตอนนี้" is clicked —
+// it does not retroactively filter the manual snapshot already loaded.
+let liveRanges = {
+  primary: { since: '2026-08-10', until: '2026-09-08' },
+  comparison: { since: '2026-07-11', until: '2026-08-09' },
+};
+let lastFetchedAt = null; // Date of the last successful live fetch, or null if still showing the manual snapshot
 
 function rowsFor(period){ // period: 'primary' | 'comparison'
   const src = period === 'primary' ? ALL_PRIMARY : ALL_COMPARISON;
@@ -874,12 +910,41 @@ function pageNameFor(key){
   return key === 'mono' ? 'Chanuntorn Development Group' : key === 'mews' ? 'Mews พระราม 2 - บางขุนเทียน' : key;
 }
 
+// ---------- time-based chat -> ad set attribution ----------
+// Meta doesn't return which ad/ad set a conversation came from retroactively (see note above chatsForProject).
+// As a best-effort substitute, each chat is attributed to whichever ad set audience was actually running
+// (by real start_time) at the moment that chat's last message came in — not shown identically under every
+// ad set. Requires adsetStartTime data; ad sets without a known start_time, or projects with none at all,
+// fall back to showing the full project chat list under every row (old behavior) rather than silently
+// hiding chats.
+function activeAudienceWindows(project){
+  const names = new Set();
+  ALL_PRIMARY.concat(ALL_COMPARISON).forEach(r => { if (r.project === project) names.add(r.adset); });
+  return [...names]
+    .filter(n => adsetStartTime[n])
+    .map(n => ({ name: n, start: new Date(adsetStartTime[n]).getTime() }))
+    .sort((a, b) => a.start - b.start);
+}
+function chatsForAudience(name, project){
+  const all = chatsForProject(project);
+  const windows = activeAudienceWindows(project);
+  if (windows.length === 0 || !adsetStartTime[name]) return all;
+  return all.filter(c => {
+    const t = new Date(c.updatedTime).getTime();
+    if (isNaN(t)) return false;
+    let active = windows[0];
+    for (const w of windows) { if (w.start <= t) active = w; else break; }
+    return active.name === name;
+  });
+}
+
 // ---------- audience section (group by ad set name, expandable to the real chat list for that project) ----------
 // NOTE: Meta doesn't return which ad/ad set a conversation came from retroactively (only live via webhook
 // at the moment the chat starts), so the chat list under each ad set is every real chat for that ad set's
 // PROJECT (page) — not filtered down to that specific ad set. That's flagged in the detail note below.
 function renderAudienceDetail(name, project){
-  const rows = chatsForProject(project);
+  const rows = chatsForAudience(name, project);
+  const timeAttributed = activeAudienceWindows(project).length > 0 && !!adsetStartTime[name];
   const rowsHtml = rows
     .slice()
     .sort((a,b) => new Date(b.updatedTime) - new Date(a.updatedTime))
@@ -906,8 +971,11 @@ function renderAudienceDetail(name, project){
     : project === 'mews'
     ? ' · บัญชีโฆษณา Mews บัญชีหนึ่ง (1822065945093567) ยิงผ่านเพจ "Chanuntorn Development Group" เพจเดียวกับ Mono (ตรวจสอบแล้วผ่าน Meta API) ส่วนอีกบัญชี (1003863749343307) ยิงผ่านเพจ "Mews พระราม 2 - บางขุนเทียน" โดยตรง รายชื่อแชทของ Mews ด้านล่างนี้จึงรวมแชทจากทั้ง 2 เพจเข้าด้วยกัน — Meta ไม่มีช่องทางให้ดึงย้อนหลังว่าแชทแต่ละอันทักมาจากโฆษณา ID ไหนหรือบัญชีไหน (ข้อมูลนี้ส่งมาทาง webhook แบบเรียลไทม์ตอนแชทเริ่มเท่านั้น)'
     : '';
+  const attributionNote = timeAttributed
+    ? `แชทที่แสดงด้านล่างนี้กรองตามเวลาแล้วว่าใกล้เคียงกับช่วงที่กลุ่มเป้าหมาย "${name}" เริ่มทำงานจริงมากที่สุด (เทียบกับกลุ่มเป้าหมายอื่นในโปรเจคเดียวกันที่เริ่มก่อน/หลัง) รวม ${fmtInt(rows.length)} รายการ — เป็นการประมาณจากเวลา ไม่ใช่ข้อมูลอ้างอิงโฆษณา ID ตรงๆ เพราะ Meta ส่งข้อมูลนั้นแบบเรียลไทม์ผ่าน webhook ตอนแชทเริ่มเท่านั้น ไม่มี API ให้ดึงย้อนหลัง`
+    : `แชทที่ดึงมาจาก Meta ทั้งหมด ${fmtInt(rows.length)} รายการสำหรับเพจนี้ — ยังไม่มีข้อมูลเวลาที่กลุ่มเป้าหมายนี้เริ่มทำงานจริง จึงแสดงแชทจริงทั้งหมดของโปรเจคนี้ (ไม่ได้กรองเฉพาะกลุ่มเป้าหมายนี้) — Meta ไม่ส่งข้อมูลอ้างอิงโฆษณา ID กลับมาย้อนหลังเช่นกัน`;
   return `
-    <div class="aud-detail-note">แชทที่ดึงมาจาก Meta ทั้งหมด ${fmtInt(rows.length)} รายการสำหรับเพจนี้ — Meta ไม่ส่งข้อมูลอ้างอิงกลับไปที่กลุ่มเป้าหมาย/แคมเปญของแต่ละแชทย้อนหลัง จึงแสดงแชทจริงทั้งหมดของโปรเจคนี้ (ไม่ได้กรองเฉพาะกลุ่มเป้าหมายนี้) · "คอนเทนต์ที่ทัก" ระบุย้อนหลังไม่ได้ด้วยเหตุผลเดียวกัน · คลิก Qualify / Non-Qualify / Walk-in เพื่อยืนยันเอง (รีเซ็ตเมื่อรีเฟรชหน้า) · 💡 = สถานะที่บอทแชทของคุณแท็กไว้อัตโนมัติในข้อความ (จากคำว่า "มีคุณสมบัติ" / "มาถึงโครงการ") เป็นแค่คำแนะนำ ไม่ได้ยืนยันแทนคุณ · Add-Line ตรวจสอบจากข้อความ 15 รายการล่าสุดของแต่ละแชทแล้วไม่พบคำว่าไลน์เลยสักแชท (ระบบแชทนี้อาจไม่ได้ใช้ปุ่ม Add-Line หรืออยู่นอกช่วงข้อความที่ดึงมา — บอกผมได้ถ้ามีคำที่ควรค้นหาเพิ่ม)${mixedPageNote}</div>
+    <div class="aud-detail-note">${attributionNote} · "คอนเทนต์ที่ทัก" ระบุย้อนหลังไม่ได้ด้วยเหตุผลเดียวกัน · คลิก Qualify / Non-Qualify / Walk-in เพื่อยืนยันเอง (รีเซ็ตเมื่อรีเฟรชหน้า) · 💡 = สถานะที่บอทแชทของคุณแท็กไว้อัตโนมัติในข้อความ (จากคำว่า "มีคุณสมบัติ" / "มาถึงโครงการ") เป็นแค่คำแนะนำ ไม่ได้ยืนยันแทนคุณ · Add-Line ตรวจสอบจากข้อความ 15 รายการล่าสุดของแต่ละแชทแล้วไม่พบคำว่าไลน์เลยสักแชท (ระบบแชทนี้อาจไม่ได้ใช้ปุ่ม Add-Line หรืออยู่นอกช่วงข้อความที่ดึงมา — บอกผมได้ถ้ามีคำที่ควรค้นหาเพิ่ม)${mixedPageNote}</div>
     <div class="brk-scroll">
       <table class="brk-table">
         <thead>
@@ -929,7 +997,7 @@ function renderAudienceRows(){
     const groupRows = mapP.get(name) || [];
     const a = agg(groupRows), aP = agg(mapC.get(name) || []);
     const project = groupRows[0] ? groupRows[0].project : selectedProject;
-    const chats = chatsForProject(project);
+    const chats = chatsForAudience(name, project);
     const qualifyCount = chats.filter(c => chatStatus.get(c.id) === 'qualify').length;
     const nonQualifyCount = chats.filter(c => chatStatus.get(c.id) === 'nonqualify').length;
     const walkinCount = chats.filter(c => chatStatus.get(c.id) === 'walkin').length;
@@ -1021,6 +1089,63 @@ function renderAll(){
   renderAudienceRows();
   renderContentTable();
 }
+
+// ---------- live fetch (Meta Marketing API via the Cloudflare Worker's /api/insights route) ----------
+// Requires the Worker to have a META_ACCESS_TOKEN secret configured (see wrangler.jsonc / worker.js in
+// this repo). Until that's set up, clicking the button will show a clear error instead of silently failing.
+function updateFreshBadge(){
+  const badge = document.getElementById('dataFreshBadge');
+  if (lastFetchedAt) {
+    const t = lastFetchedAt.toLocaleString('th-TH', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'});
+    badge.textContent = `✅ ข้อมูลจริงจาก Meta Ads — ดึงสดล่าสุด ${t} น.`;
+  } else {
+    badge.textContent = '📌 ข้อมูล ณ วันที่ปรับปรุงแดชบอร์ด (ดึงด้วยมือ)';
+  }
+}
+async function fetchProjectInsights(project, since, until){
+  const accounts = projects[project].accounts.join(',');
+  const url = `/api/insights?accounts=${encodeURIComponent(accounts)}&since=${encodeURIComponent(since)}&until=${encodeURIComponent(until)}`;
+  const res = await fetch(url);
+  let body;
+  try { body = await res.json(); } catch(e) { throw new Error(`เซิร์ฟเวอร์ตอบกลับไม่ถูกต้อง (HTTP ${res.status})`); }
+  if (!res.ok || body.error) throw new Error(body.error || `HTTP ${res.status}`);
+  return body
+    .filter(r => r.spend > 0)
+    .map(r => ({ project, campaign: r.campaign, adset: r.adset, ad: r.ad, spend: r.spend, reach: r.reach, inbox: r.inbox }));
+}
+async function fetchLiveData(){
+  const btn = document.getElementById('fetchLiveBtn');
+  const errBox = document.getElementById('liveFetchError');
+  errBox.hidden = true;
+  liveRanges.primary.since = document.getElementById('rangePrimaryStart').value || liveRanges.primary.since;
+  liveRanges.primary.until = document.getElementById('rangePrimaryEnd').value || liveRanges.primary.until;
+  liveRanges.comparison.since = document.getElementById('rangeComparisonStart').value || liveRanges.comparison.since;
+  liveRanges.comparison.until = document.getElementById('rangeComparisonEnd').value || liveRanges.comparison.until;
+  btn.disabled = true;
+  btn.textContent = '⏳ กำลังดึงข้อมูล...';
+  try {
+    const projectKeys = Object.keys(projects);
+    const primaryLists = await Promise.all(projectKeys.map(p => fetchProjectInsights(p, liveRanges.primary.since, liveRanges.primary.until)));
+    const comparisonLists = await Promise.all(projectKeys.map(p => fetchProjectInsights(p, liveRanges.comparison.since, liveRanges.comparison.until)));
+    ALL_PRIMARY = primaryLists.flat();
+    ALL_COMPARISON = comparisonLists.flat();
+    lastFetchedAt = new Date();
+    updateFreshBadge();
+    renderAll();
+  } catch (e) {
+    errBox.hidden = false;
+    errBox.textContent = '⚠️ ดึงข้อมูลสดไม่สำเร็จ: ' + (e && e.message ? e.message : String(e));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔄 ดึงข้อมูลสดตอนนี้';
+  }
+}
+document.getElementById('fetchLiveBtn').addEventListener('click', fetchLiveData);
+document.getElementById('rangePrimaryStart').value = liveRanges.primary.since;
+document.getElementById('rangePrimaryEnd').value = liveRanges.primary.until;
+document.getElementById('rangeComparisonStart').value = liveRanges.comparison.since;
+document.getElementById('rangeComparisonEnd').value = liveRanges.comparison.until;
+updateFreshBadge();
 
 // ---------- boot ----------
 renderProjectSelect();
