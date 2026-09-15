@@ -1002,9 +1002,21 @@ function resolvedAdsetFor(chat){
 }
 
 // ---------- real chat helpers (from Facebook Messenger Conversations) ----------
+// Whether a chat's updatedTime falls inside the currently-selected primary date range (the same
+// range the spend/reach/inbox numbers above the table use), compared as local calendar days via
+// toDateStr — the same convention liveRanges.primary itself is built with, so the comparison lines up
+// with what the date pickers show. A chat with no usable date is kept visible rather than hidden.
+function isWithinPrimaryRange(chat){
+  if (!chat.updatedTime) return true;
+  const d = new Date(chat.updatedTime);
+  if (isNaN(d)) return true;
+  const dayStr = toDateStr(d);
+  return dayStr >= liveRanges.primary.since && dayStr <= liveRanges.primary.until;
+}
 function chatsForProject(proj){
   const p = proj || selectedProject;
   return chatsRaw.filter(c => {
+    if (!isWithinPrimaryRange(c)) return false;
     const resolved = resolvedAdsetsFor(c);
     if (resolved.length){
       // We have confirmed, real ad attribution for this chat (from Business Suite's Labels panel,
