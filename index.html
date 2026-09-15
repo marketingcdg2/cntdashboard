@@ -245,13 +245,13 @@
       <span class="sep">–</span>
       <input type="date" id="rangeComparisonEnd" class="date-input">
     </div>
-    <div class="range-hint">เลือกช่วงวันที่เองได้อิสระ แล้วกด "ดึงข้อมูลสดตอนนี้" เพื่อดึงข้อมูลจริงตามช่วงที่เลือก (ต้องตั้งค่า Meta token บน Cloudflare ก่อนใช้งานได้จริง)</div>
+    <div class="range-hint">ค่าเริ่มต้นคือช่วง 7 วันล่าสุดแบบ rolling (อัพเดทอัตโนมัติทุก 15 นาทีที่เปิดหน้านี้ทิ้งไว้ ไม่ต้องกดเอง) หรือจะเลือกช่วงวันที่เองแล้วกด "ดึงข้อมูลสดตอนนี้" เพื่อดูช่วงอื่นแบบครั้งเดียวก็ได้ (ต้องตั้งค่า Meta token บน Cloudflare ก่อนใช้งานได้จริง)</div>
   </div>
 
   <div class="kpi-grid" id="kpiGrid"></div>
 
   <div class="section-title">สรุปตาม Objective</div>
-  <div class="section-note">รวมผลลัพธ์ของแคมเปญที่มี Objective เดียวกันเข้าด้วยกัน (Awareness / Inbox) · % เทียบกับช่วงเปรียบเทียบ 30 วันก่อนหน้า</div>
+  <div class="section-note">รวมผลลัพธ์ของแคมเปญที่มี Objective เดียวกันเข้าด้วยกัน (Awareness / Inbox) · % เทียบกับช่วงเปรียบเทียบก่อนหน้า (ความยาวเท่ากับช่วงหลักที่เลือก)</div>
   <div class="card table-scroll">
     <table id="objTable" class="obj-table">
       <thead>
@@ -301,7 +301,7 @@
     </table>
   </div>
 
-  <div class="footnote">แดชบอร์ดเชื่อมข้อมูลจริงจาก Meta Ads API · Project Mono = บัญชี 783833721188530 · Project Mews = บัญชี 1003863749343307 + 1822065945093567 · TikTok / Google อยู่ระหว่างออกแบบ ยังไม่มีข้อมูล · % สีเขียว/แดง เทียบกับช่วง 30 วันก่อนหน้า</div>
+  <div class="footnote">แดชบอร์ดเชื่อมข้อมูลจริงจาก Meta Ads API · Project Mono = บัญชี 783833721188530 · Project Mews = บัญชี 1003863749343307 + 1822065945093567 · TikTok / Google อยู่ระหว่างออกแบบ ยังไม่มีข้อมูล · % สีเขียว/แดง เทียบกับช่วงเปรียบเทียบก่อนหน้า · ค่าเริ่มต้นคือ 7 วันล่าสุดแบบ rolling อัพเดทอัตโนมัติทุก 15 นาที</div>
 </div>
 
 <script>
@@ -787,14 +787,29 @@ const openAudiences = new Set();
 const chatStatus = new Map(); // chat id -> 'qualify' | 'nonqualify' | 'walkin' | null (client-side only, resets on reload)
 
 // ---------- live fetch state ----------
-// Default ranges match the manually-pulled snapshot baked into ALL_PRIMARY/ALL_COMPARISON above.
-// Editing the date pickers only changes what gets requested next time "ดึงข้อมูลสดตอนนี้" is clicked —
-// it does not retroactively filter the manual snapshot already loaded.
-let liveRanges = {
-  primary: { since: '2026-08-16', until: '2026-09-14' },
-  comparison: { since: '2026-07-17', until: '2026-08-15' },
-};
+// Default range is a ROLLING window (computed fresh from "today" every time it's applied), not a fixed
+// snapshot: primary = the last N days including today, comparison = the N days immediately before that.
+// Editing the date pickers by hand and clicking "ดึงข้อมูลสดตอนนี้" overrides this for a one-off custom
+// range, but the next auto-refresh tick (see boot section) will recompute and reapply the rolling window
+// unless auto-refresh is turned off.
+const ROLLING_WINDOW_DAYS = 7;
+function toDateStr(d){
+  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), dd = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${dd}`;
+}
+function computeRollingRanges(days){
+  const until = new Date();
+  const since = new Date(until); since.setDate(since.getDate() - (days - 1));
+  const compUntil = new Date(since); compUntil.setDate(compUntil.getDate() - 1);
+  const compSince = new Date(compUntil); compSince.setDate(compSince.getDate() - (days - 1));
+  return {
+    primary: { since: toDateStr(since), until: toDateStr(until) },
+    comparison: { since: toDateStr(compSince), until: toDateStr(compUntil) },
+  };
+}
+let liveRanges = computeRollingRanges(ROLLING_WINDOW_DAYS);
 let lastFetchedAt = null; // Date of the last successful live fetch, or null if still showing the manual snapshot
+let autoRefreshTimer = null;
 
 function rowsFor(period){ // period: 'primary' | 'comparison'
   const src = period === 'primary' ? ALL_PRIMARY : ALL_COMPARISON;
@@ -1194,9 +1209,27 @@ document.getElementById('rangeComparisonStart').value = liveRanges.comparison.si
 document.getElementById('rangeComparisonEnd').value = liveRanges.comparison.until;
 updateFreshBadge();
 
+// ---------- auto-refresh (rolling window, no manual click needed) ----------
+// Recomputes the rolling N-day window from "today" and re-fetches live data automatically: once right
+// after the page loads, then again every AUTO_REFRESH_MINUTES while the tab stays open. This is what
+// keeps the dashboard current without the user having to click "ดึงข้อมูลสดตอนนี้" themselves.
+const AUTO_REFRESH_MINUTES = 15;
+async function autoRefreshTick(){
+  const fresh = computeRollingRanges(ROLLING_WINDOW_DAYS);
+  liveRanges.primary = fresh.primary;
+  liveRanges.comparison = fresh.comparison;
+  document.getElementById('rangePrimaryStart').value = liveRanges.primary.since;
+  document.getElementById('rangePrimaryEnd').value = liveRanges.primary.until;
+  document.getElementById('rangeComparisonStart').value = liveRanges.comparison.since;
+  document.getElementById('rangeComparisonEnd').value = liveRanges.comparison.until;
+  await fetchLiveData();
+}
+
 // ---------- boot ----------
 renderProjectSelect();
 renderAll();
+autoRefreshTick(); // replace the manual snapshot with live data for the rolling window right away
+autoRefreshTimer = setInterval(autoRefreshTick, AUTO_REFRESH_MINUTES * 60 * 1000);
 </script>
 </body>
 </html>
