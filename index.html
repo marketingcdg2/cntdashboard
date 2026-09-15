@@ -972,41 +972,23 @@ function pageNameFor(key){
   return key === 'mono' ? 'Chanuntorn Development Group' : key === 'mews' ? 'Mews พระราม 2 - บางขุนเทียน' : key;
 }
 
-// ---------- time-based chat -> ad set attribution ----------
-// Meta doesn't return which ad/ad set a conversation came from retroactively (see note above chatsForProject).
-// As a best-effort substitute, each chat is attributed to whichever ad set audience was actually running
-// (by real start_time) at the moment that chat's last message came in — not shown identically under every
-// ad set. Requires adsetStartTime data; ad sets without a known start_time, or projects with none at all,
-// fall back to showing the full project chat list under every row (old behavior) rather than silently
-// hiding chats.
-function activeAudienceWindows(project){
-  const names = new Set();
-  ALL_PRIMARY.concat(ALL_COMPARISON).forEach(r => { if (r.project === project) names.add(r.adset); });
-  return [...names]
-    .filter(n => startTimeFor(project, n))
-    .map(n => ({ name: n, start: new Date(startTimeFor(project, n)).getTime() }))
-    .sort((a, b) => a.start - b.start);
-}
 function chatsForAudience(name, project){
-  const all = chatsForProject(project);
-  const windows = activeAudienceWindows(project);
-  if (windows.length === 0 || !startTimeFor(project, name)) return all;
-  return all.filter(c => {
-    const t = new Date(c.updatedTime).getTime();
-    if (isNaN(t)) return false;
-    let active = windows[0];
-    for (const w of windows) { if (w.start <= t) active = w; else break; }
-    return active.name === name;
-  });
+  // Previously this tried to bucket each chat under whichever ad set's audience had the latest
+  // start_time at or before the chat's updatedTime. In practice that dumped essentially every real
+  // chat for the project into whichever single ad set happened to have launched most recently —
+  // including brand-new leads — while every other ad set showed nothing, which made new customers
+  // look "missing" even though they were in the data. Since Meta doesn't provide real per-ad-set
+  // attribution for existing chats anyway (see chatsForProject above), just show the full, current
+  // chat list for the project under every ad set row instead of a misleading subset.
+  return chatsForProject(project);
 }
 
 // ---------- audience section (group by ad set name, expandable to the real chat list for that project) ----------
-// NOTE: Meta doesn't return which ad/ad set a conversation came from retroactively (only live via webhook
-// at the moment the chat starts), so the chat list under each ad set is every real chat for that ad set's
-// PROJECT (page) — not filtered down to that specific ad set. That's flagged in the detail note below.
+// Meta doesn't return which ad/ad set a conversation came from retroactively (only live via webhook at
+// the moment the chat starts), so the chat list under each ad set is every real chat for that ad set's
+// PROJECT (page) — the same full list under every ad set row, not filtered down to that specific one.
 function renderAudienceDetail(name, project){
   const rows = chatsForAudience(name, project);
-  const timeAttributed = activeAudienceWindows(project).length > 0 && !!startTimeFor(project, name);
   const rowsHtml = rows
     .slice()
     .sort((a,b) => new Date(b.updatedTime) - new Date(a.updatedTime))
@@ -1028,16 +1010,7 @@ function renderAudienceDetail(name, project){
           <td>${addLineHtml}</td>
         </tr>`;
     }).join('');
-  const mixedPageNote = project === 'mono'
-    ? ' · เพจ "Chanuntorn Development Group" นี้เป็นเพจโฆษณาของบัญชี Mono (783833721188530) — Meta ไม่มีช่องทางให้ดึงย้อนหลังว่าแชทแต่ละอันทักมาจากโฆษณา ID ไหน (ข้อมูลนี้ส่งมาทาง webhook แบบเรียลไทม์ตอนแชทเริ่มเท่านั้น ไม่ใช่ข้อมูลที่ค้นย้อนหลังผ่าน API ได้) จึงแสดงแชทจริงทั้งหมดของเพจนี้'
-    : project === 'mews'
-    ? ' · บัญชีโฆษณา Mews บัญชีหนึ่ง (1822065945093567) ยิงผ่านเพจ "Chanuntorn Development Group" เพจเดียวกับ Mono (ตรวจสอบแล้วผ่าน Meta API) ส่วนอีกบัญชี (1003863749343307) ยิงผ่านเพจ "Mews พระราม 2 - บางขุนเทียน" โดยตรง รายชื่อแชทของ Mews ด้านล่างนี้จึงรวมแชทจากทั้ง 2 เพจเข้าด้วยกัน — Meta ไม่มีช่องทางให้ดึงย้อนหลังว่าแชทแต่ละอันทักมาจากโฆษณา ID ไหนหรือบัญชีไหน (ข้อมูลนี้ส่งมาทาง webhook แบบเรียลไทม์ตอนแชทเริ่มเท่านั้น)'
-    : '';
-  const attributionNote = timeAttributed
-    ? `แชทที่แสดงด้านล่างนี้กรองตามเวลาแล้วว่าใกล้เคียงกับช่วงที่กลุ่มเป้าหมาย "${name}" เริ่มทำงานจริงมากที่สุด (เทียบกับกลุ่มเป้าหมายอื่นในโปรเจคเดียวกันที่เริ่มก่อน/หลัง) รวม ${fmtInt(rows.length)} รายการ — เป็นการประมาณจากเวลา ไม่ใช่ข้อมูลอ้างอิงโฆษณา ID ตรงๆ เพราะ Meta ส่งข้อมูลนั้นแบบเรียลไทม์ผ่าน webhook ตอนแชทเริ่มเท่านั้น ไม่มี API ให้ดึงย้อนหลัง`
-    : `แชทที่ดึงมาจาก Meta ทั้งหมด ${fmtInt(rows.length)} รายการสำหรับเพจนี้ — ยังไม่มีข้อมูลเวลาที่กลุ่มเป้าหมายนี้เริ่มทำงานจริง จึงแสดงแชทจริงทั้งหมดของโปรเจคนี้ (ไม่ได้กรองเฉพาะกลุ่มเป้าหมายนี้) — Meta ไม่ส่งข้อมูลอ้างอิงโฆษณา ID กลับมาย้อนหลังเช่นกัน`;
   return `
-    <div class="aud-detail-note">${attributionNote} · "คอนเทนต์ที่ทัก" ระบุย้อนหลังไม่ได้ด้วยเหตุผลเดียวกัน · คลิก Qualify / Non-Qualify / Walk-in เพื่อยืนยันเอง (รีเซ็ตเมื่อรีเฟรชหน้า) · 💡 = สถานะที่บอทแชทของคุณแท็กไว้อัตโนมัติในข้อความ (จากคำว่า "มีคุณสมบัติ" / "มาถึงโครงการ") เป็นแค่คำแนะนำ ไม่ได้ยืนยันแทนคุณ · Add-Line ตรวจสอบจากข้อความ 15 รายการล่าสุดของแต่ละแชทแล้วไม่พบคำว่าไลน์เลยสักแชท (ระบบแชทนี้อาจไม่ได้ใช้ปุ่ม Add-Line หรืออยู่นอกช่วงข้อความที่ดึงมา — บอกผมได้ถ้ามีคำที่ควรค้นหาเพิ่ม)${mixedPageNote}</div>
     <div class="brk-scroll">
       <table class="brk-table">
         <thead>
