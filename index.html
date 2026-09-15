@@ -785,7 +785,28 @@ const chatsRaw = [
 // ---------- state ----------
 let selectedProject = 'mono'; // 'mono' | 'mews'
 const openAudiences = new Set();
-const chatStatus = new Map(); // chat id -> 'qualify' | 'nonqualify' | 'walkin' | null (client-side only, resets on reload)
+
+// chat id -> 'qualify' | 'nonqualify' | 'walkin'. Persisted to this browser's localStorage so ticking a
+// status survives a page reload / auto-refresh instead of being wiped every time (it used to be an
+// in-memory-only Map). This is per-browser/per-device storage, not shared across people or devices.
+const CHAT_STATUS_STORAGE_KEY = 'metaAdsDashboard.chatStatus.v1';
+function loadChatStatus(){
+  try {
+    const raw = localStorage.getItem(CHAT_STATUS_STORAGE_KEY);
+    if (!raw) return new Map();
+    return new Map(Object.entries(JSON.parse(raw)));
+  } catch (e) {
+    return new Map(); // private browsing / storage disabled / corrupt data — fall back to empty, non-fatal
+  }
+}
+function saveChatStatus(){
+  try {
+    localStorage.setItem(CHAT_STATUS_STORAGE_KEY, JSON.stringify(Object.fromEntries(chatStatus)));
+  } catch (e) {
+    // storage unavailable (private browsing, quota, etc.) — status just won't survive a reload this time
+  }
+}
+const chatStatus = loadChatStatus();
 
 // ---------- live fetch state ----------
 // Default range is a ROLLING window (computed fresh from "today" every time it's applied), not a fixed
@@ -1199,7 +1220,8 @@ document.getElementById('audRows').addEventListener('click', (e) => {
       const id = tr.getAttribute('data-chat-id');
       const key = statusEl.getAttribute('data-key');
       const cur = chatStatus.get(id);
-      chatStatus.set(id, cur === key ? null : key); // click again to unset
+      if (cur === key) chatStatus.delete(id); else chatStatus.set(id, key); // click again to unset
+      saveChatStatus();
       renderAll();
     }
     return;
