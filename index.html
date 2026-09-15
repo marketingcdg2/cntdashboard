@@ -981,26 +981,48 @@ const AD_ID_TO_ADSET = {
   '120248797142100403': { project:'mews', adset:'RealEs+BusinessOwer+Inves+Lifetyle', campaign:'Mews_Inbox_VDO' },
   '120248797118840403': { project:'mews', adset:'Lifestyle', campaign:'Mews_Inbox_FakeAlbum' },
 };
-// Resolve a chat's real ad set name, if we know it. A chat can carry more than one ad_id (it replied
-// to more than one ad over time); we use the first one we have a resolution for.
-function resolvedAdsetFor(chat){
-  if (!chat.adIds || !chat.adIds.length) return null;
+// Resolve ALL of a chat's real ad-set attributions, if we know them. A chat can carry more than one
+// ad_id (it replied to more than one ad over time, sometimes even ads from different projects — see
+// the note on chatsForProject below), so this returns every resolution we have, not just the first.
+function resolvedAdsetsFor(chat){
+  if (!chat.adIds || !chat.adIds.length) return [];
+  const out = [];
   for (const id of chat.adIds){
     const hit = AD_ID_TO_ADSET[id];
-    if (hit) return hit;
+    if (hit) out.push(hit);
   }
-  return null;
+  return out;
+}
+// Convenience: just the first known resolution (used where a chat's exact ad set only matters in a
+// context that's already scoped to one project — the caller should prefer resolvedAdsetsFor when a
+// chat could plausibly belong to more than one project).
+function resolvedAdsetFor(chat){
+  const all = resolvedAdsetsFor(chat);
+  return all.length ? all[0] : null;
 }
 
 // ---------- real chat helpers (from Facebook Messenger Conversations) ----------
 function chatsForProject(proj){
   const p = proj || selectedProject;
-  // ad account 1822065945093567 (one of the 2 Mews ad accounts) actually posts through the same
-  // Facebook Page as Mono ("Chanuntorn Development Group", page id 955520637799738) — confirmed via
-  // the Meta Marketing API. So Mews customer chats land in both the Chanuntorn page and the
-  // dedicated Mews page, and the Mews chat list here merges both. Mono's chat list stays limited to
-  // the Chanuntorn page only.
-  return p === 'mews' ? chatsRaw.filter(c => c.page === 'mews' || c.page === 'mono') : chatsRaw.filter(c => c.page === p);
+  return chatsRaw.filter(c => {
+    const resolved = resolvedAdsetsFor(c);
+    if (resolved.length){
+      // We have confirmed, real ad attribution for this chat (from Business Suite's Labels panel,
+      // resolved to a project via the Marketing API) — trust that over which page the chat happened
+      // to land on. A chat belongs to a project only if one of its confirmed ads actually belongs to
+      // that project, so a Mono-page chat whose real ad is a Mews campaign shows up under Mews only,
+      // not duplicated into Mono too.
+      return resolved.some(r => r.project === p);
+    }
+    // No confirmed attribution yet for this chat: fall back to the page heuristic. ad account
+    // 1822065945093567 (one of the 2 Mews ad accounts) actually posts through the same Facebook Page
+    // as Mono ("Chanuntorn Development Group", page id 955520637799738) — confirmed via the Meta
+    // Marketing API. So an unconfirmed Mono-page chat *could* really be a Mews lead, and we don't know
+    // yet either way — it's included in both projects' unconfirmed pool until someone checks it.
+    // Mono's own chat list stays limited to the Chanuntorn page only.
+    if (p === 'mews') return c.page === 'mews' || c.page === 'mono';
+    return c.page === p;
+  });
 }
 function fmtChatTime(iso){
   if (!iso) return '–';
@@ -1015,18 +1037,22 @@ function pageNameFor(key){
 function chatsForAudience(name, project){
   // Real attribution, from AD_ID_TO_ADSET (see above), for the chats we've manually verified via
   // Business Suite's per-conversation Labels panel. A chat only shows up under a specific ad-set row
-  // if its real, confirmed ad set name matches that row — no more guessing/bucketing everything into
-  // one row, and no more showing the identical full list under every row.
-  return chatsForProject(project).filter(c => {
-    const r = resolvedAdsetFor(c);
-    return r && r.adset === name;
-  });
+  // if one of its real, confirmed ad-set resolutions matches both this project and this row — no more
+  // guessing/bucketing everything into one row, and no more showing the identical full list under
+  // every row. (A chat with ads from more than one project — see chatsForProject — can legitimately
+  // show up under one row in Mono and a different row in Mews at the same time; that's correct.)
+  return chatsForProject(project).filter(c =>
+    resolvedAdsetsFor(c).some(r => r.project === project && r.adset === name)
+  );
 }
-// Chats in this project we do NOT yet have confirmed ad-set attribution for (either no ad_id captured
-// yet, or its ad_id isn't in AD_ID_TO_ADSET yet). Shown as one separate "ไม่ทราบกลุ่มโฆษณา" bucket per
-// project instead of being silently dropped or duplicated across every real row.
+// Chats in this project we do NOT yet have confirmed ad-set attribution for within THIS project
+// (either no ad_id captured yet, its ad_id isn't in AD_ID_TO_ADSET yet, or all of its confirmed ads
+// belong to the other project). Shown as one separate "ไม่ทราบกลุ่มโฆษณา" bucket per project instead of
+// being silently dropped or duplicated across every real row.
 function unattributedChatsForProject(project){
-  return chatsForProject(project).filter(c => !resolvedAdsetFor(c));
+  return chatsForProject(project).filter(c =>
+    !resolvedAdsetsFor(c).some(r => r.project === project)
+  );
 }
 
 // ---------- audience section (group by ad set name, expandable to the real chat list for that project) ----------
