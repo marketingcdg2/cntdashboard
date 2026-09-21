@@ -227,7 +227,7 @@
       <div class="platform-btns">
         <button class="platform-btn active" id="platMeta" type="button">Meta</button>
         <button class="platform-btn" id="platTiktok" type="button">TikTok</button>
-        <button class="platform-btn" type="button" disabled title="อยู่ระหว่างออกแบบ">Google<span class="platform-soon">เร็วๆ นี้</span></button>
+        <button class="platform-btn" id="platGoogle" type="button">Google</button>
       </div>
     </div>
   </div>
@@ -302,7 +302,7 @@
     </table>
   </div>
 
-  <div class="footnote">แดชบอร์ดเชื่อมข้อมูลจริงจาก Meta Ads API · Project Mono = บัญชี 783833721188530 · Project Mews = บัญชี 1003863749343307 + 1822065945093567 · Google อยู่ระหว่างออกแบบ ยังไม่มีข้อมูล · % สีเขียว/แดง เทียบกับช่วงเปรียบเทียบก่อนหน้า · ค่าเริ่มต้นคือ 7 วันล่าสุดแบบ rolling อัพเดทอัตโนมัติวันละ 1 ครั้ง (กดปุ่ม "ดึงข้อมูลสดตอนนี้" เพื่อดึงเองตอนไหนก็ได้)</div>
+  <div class="footnote">แดชบอร์ดเชื่อมข้อมูลจริงจาก Meta Ads API · Project Mono = บัญชี 783833721188530 · Project Mews = บัญชี 1003863749343307 + 1822065945093567 · % สีเขียว/แดง เทียบกับช่วงเปรียบเทียบก่อนหน้า · ค่าเริ่มต้นคือ 7 วันล่าสุดแบบ rolling อัพเดทอัตโนมัติวันละ 1 ครั้ง (กดปุ่ม "ดึงข้อมูลสดตอนนี้" เพื่อดึงเองตอนไหนก็ได้)</div>
   </div>
 
   <div id="tiktokSection" hidden>
@@ -383,6 +383,86 @@
     </div>
 
     <div class="footnote">ข้อมูล TikTok มาจากรายงาน "Basic Data" ที่ export เป็น Excel ตรงจาก TikTok Ads Manager (Campaign/Ad group/Ad + Cost, Impressions, Reach, Frequency, Clicks (all), Clicks (destination), CPC (destination), CPM, CTR, Conversions, Conversion rate (CVR), Cost per conversion) · Project Mono / Project Mews แยกตามที่แท็กไว้ตอนนำเข้าไฟล์ · ยังไม่มี Inbox/Walk-in/Add-Line แบบ Meta เพราะ TikTok Basic Data ไม่มีคอลัมน์นี้ให้ export ตรงๆ</div>
+  </div>
+
+  <div id="googleSection" hidden>
+    <div class="control-bar">
+      <div class="control-group">
+        <span class="control-label">ข้อมูล</span>
+        <span id="googleAsOf" style="font-size:12.5px;color:var(--text-secondary);"></span>
+      </div>
+      <div class="range-hint">ข้อมูล Google Ads เป็นแบบนำเข้าจากไฟล์ Excel ที่ export จาก Google Ads (ตารางสถิติมาตรฐาน/Campaigns, Ad groups, Ads) ด้วยมือ ไม่ใช่ข้อมูลสดแบบ Meta — อัพเดทเมื่อมีการนำเข้าไฟล์ใหม่เท่านั้น</div>
+    </div>
+
+    <div class="kpi-grid" id="googleKpiGrid"></div>
+
+    <div class="section-title">สรุปตามแคมเปญ (Campaign)</div>
+    <div class="section-note">แคมเปญชื่อเดียวกันถูกรวมยอดไว้แถวเดียวกัน · ใช้เฉพาะคอลัมน์มาตรฐานที่ export ตรงจากตารางสถิติ Google Ads ได้เลย ไม่มีการแท็กข้อมูลมือเพิ่มเติม</div>
+    <div class="card table-scroll">
+      <table id="googleCampaignTable" class="obj-table">
+        <thead>
+          <tr>
+            <th>แคมเปญ</th>
+            <th>Cost</th>
+            <th>Impr.</th>
+            <th>Clicks</th>
+            <th>CTR</th>
+            <th>Avg. CPC</th>
+            <th>Conversions</th>
+            <th>Cost / conv.</th>
+            <th>Conv. rate</th>
+          </tr>
+        </thead>
+        <tbody id="googleCampaignTbody"></tbody>
+        <tfoot id="googleCampaignTfoot"></tfoot>
+      </table>
+    </div>
+
+    <div class="section-title">สรุปตามกลุ่มโฆษณา (Ad Group)</div>
+    <div class="section-note">กลุ่มโฆษณา (Ad group) ชื่อเดียวกันที่ใช้ซ้ำในหลายแคมเปญถูกรวมยอดไว้แถวเดียวกัน</div>
+    <div class="card table-scroll">
+      <table id="googleAdgroupTable" class="obj-table">
+        <thead>
+          <tr>
+            <th>กลุ่มโฆษณา</th>
+            <th>Cost</th>
+            <th>Impr.</th>
+            <th>Clicks</th>
+            <th>CTR</th>
+            <th>Avg. CPC</th>
+            <th>Conversions</th>
+            <th>Cost / conv.</th>
+            <th>Conv. rate</th>
+          </tr>
+        </thead>
+        <tbody id="googleAdgroupTbody"></tbody>
+        <tfoot id="googleAdgroupTfoot"></tfoot>
+      </table>
+    </div>
+
+    <div class="section-title">สรุปตามโฆษณา (Ad)</div>
+    <div class="section-note">โฆษณา (ชื่อ Ad) เดียวกันที่ถูกใช้ในหลายแคมเปญ/กลุ่มโฆษณา ถูกรวมยอดไว้แถวเดียวกัน</div>
+    <div class="card table-scroll">
+      <table id="googleAdTable">
+        <thead>
+          <tr>
+            <th>โฆษณา (Ad)</th>
+            <th>Cost</th>
+            <th>Impr.</th>
+            <th>Clicks</th>
+            <th>CTR</th>
+            <th>Avg. CPC</th>
+            <th>Conversions</th>
+            <th>Cost / conv.</th>
+            <th>Conv. rate</th>
+          </tr>
+        </thead>
+        <tbody id="googleAdTbody"></tbody>
+        <tfoot id="googleAdTfoot"></tfoot>
+      </table>
+    </div>
+
+    <div class="footnote">ข้อมูล Google Ads มาจากตารางสถิติมาตรฐาน (Campaigns / Ad groups / Ads) ที่ export เป็น Excel/CSV ตรงจาก Google Ads โดยไม่ต้องเพิ่มคอลัมน์กำหนดเอง (Campaign/Ad group/Ad + Impr., Clicks, CTR, Avg. CPC, Cost, Conversions, Cost / conv., Conv. rate) · Project Mono / Project Mews แยกตามที่แท็กไว้ตอนนำเข้าไฟล์ (Google Ads เองไม่มีคอลัมน์นี้ให้ export ตรงๆ) · ยังไม่มี Inbox/Walk-in/Add-Line แบบ Meta</div>
   </div>
 
 </div>
@@ -889,7 +969,7 @@ function savePrefs(patch){
 const dashboardPrefs = loadPrefs();
 
 let selectedProject = dashboardPrefs.selectedProject || 'mono'; // 'mono' | 'mews'
-let selectedPlatform = dashboardPrefs.selectedPlatform || 'meta'; // 'meta' | 'tiktok'
+let selectedPlatform = dashboardPrefs.selectedPlatform || 'meta'; // 'meta' | 'tiktok' | 'google'
 const openAudiences = new Set();
 
 // chat id -> 'qualify' | 'nonqualify' | 'walkin'. Persisted to this browser's localStorage so ticking a
@@ -1206,6 +1286,113 @@ function renderTiktokAll(){
   renderTiktokAds();
 }
 
+// ---------- Google Ads (manual Excel import) ----------
+// Same idea as the TikTok section above: no live API hookup, the user exports the STANDARD statistics
+// table from Google Ads (Campaigns / Ad groups / Ads tabs — the columns that are there by default, no
+// custom columns needed) as Excel/CSV and pastes the rows in here. Column mapping (Google's own names on
+// the left -> this object's field on the right):
+//   Campaign                      -> campaign
+//   Ad group                      -> adgroup
+//   Ad                            -> ad
+//   Impr.                         -> impressions
+//   Clicks                        -> clicks
+//   Cost                          -> cost
+//   Conversions                   -> conversions
+//
+// Everything else (CTR, Avg. CPC, Cost / conv., Conv. rate) is re-derived from those summed base numbers
+// when grouping several rows together, the same way the TikTok section does it — never by averaging the
+// per-row percentage/ratio columns, since that distorts the result when rows have very different volumes.
+// Google Ads has no Project (Mono/Mews) column of its own, so — same as TikTok — that has to be tagged by
+// hand per row when pasting data in.
+const googleAsOfDate = null; // e.g. '10 - 16 ก.ย. 2026' — set this to the date range on the file you imported
+const googleRaw = [
+  // {project:'mono', campaign:'', adgroup:'', ad:'', impressions:0, clicks:0, cost:0, conversions:0},
+];
+
+function googleRowsForProject(project){
+  const p = project || selectedProject;
+  return googleRaw.filter(r => r.project === p);
+}
+function sumGoogleRows(rows){
+  const s = { cost:0, impressions:0, clicks:0, conversions:0, count: rows.length };
+  for (const r of rows){
+    s.cost += r.cost || 0;
+    s.impressions += r.impressions || 0;
+    s.clicks += r.clicks || 0;
+    s.conversions += r.conversions || 0;
+  }
+  s.ctr = s.impressions ? (s.clicks / s.impressions * 100) : 0;
+  s.avgCpc = s.clicks ? (s.cost / s.clicks) : 0;
+  s.convRate = s.clicks ? (s.conversions / s.clicks * 100) : 0;
+  s.costPerConv = s.conversions ? (s.cost / s.conversions) : null;
+  return s;
+}
+function groupGoogleBy(rows, keyFn){
+  const map = new Map();
+  for (const r of rows){
+    const key = keyFn(r) || '(ไม่มีชื่อ)';
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(r);
+  }
+  return [...map.entries()].map(([key, groupRows]) => ({ key, ...sumGoogleRows(groupRows) }));
+}
+function googleBreakdownRowHtml(label, s){
+  return `
+    <tr>
+      <td>${label}</td>
+      <td>${fmtBaht(s.cost)}</td>
+      <td>${fmtInt(s.impressions)}</td>
+      <td>${fmtInt(s.clicks)}</td>
+      <td>${fmtPct1(s.ctr)}</td>
+      <td>${fmtBaht(s.avgCpc)}</td>
+      <td>${fmtInt(s.conversions)}</td>
+      <td>${s.costPerConv != null ? fmtBaht(s.costPerConv) : naDash}</td>
+      <td>${fmtPct1(s.convRate)}</td>
+    </tr>`;
+}
+function renderGoogleKpis(){
+  const s = sumGoogleRows(googleRowsForProject());
+  document.getElementById('googleAsOf').textContent = googleAsOfDate ? `ข้อมูล ณ วันที่ ${googleAsOfDate}` : 'ยังไม่มีการนำเข้าไฟล์ — รอไฟล์ Excel';
+  document.getElementById('googleKpiGrid').innerHTML = `
+    <div class="tile"><div class="label">Cost รวม</div><div class="value">${fmtBaht(s.cost)}</div></div>
+    <div class="tile"><div class="label">Impressions รวม</div><div class="value">${fmtInt(s.impressions)}</div></div>
+    <div class="tile"><div class="label">Clicks รวม</div><div class="value">${fmtInt(s.clicks)}</div></div>
+    <div class="tile"><div class="label">CTR เฉลี่ย</div><div class="value">${fmtPct1(s.ctr)}</div></div>
+    <div class="tile"><div class="label">Avg. CPC</div><div class="value">${fmtBaht(s.avgCpc)}</div></div>
+    <div class="tile"><div class="label">Conversions รวม</div><div class="value">${fmtInt(s.conversions)}</div></div>
+  `;
+}
+function renderGoogleCampaigns(){
+  const rows = googleRowsForProject();
+  const groups = groupGoogleBy(rows, r => r.campaign);
+  document.getElementById('googleCampaignTbody').innerHTML = groups.length
+    ? groups.map(g => googleBreakdownRowHtml(g.key, g)).join('')
+    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล Google Ads สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+  document.getElementById('googleCampaignTfoot').innerHTML = groups.length ? googleBreakdownRowHtml('รวมทั้งหมด', sumGoogleRows(rows)) : '';
+}
+function renderGoogleAdgroups(){
+  const rows = googleRowsForProject();
+  const groups = groupGoogleBy(rows, r => r.adgroup);
+  document.getElementById('googleAdgroupTbody').innerHTML = groups.length
+    ? groups.map(g => googleBreakdownRowHtml(g.key, g)).join('')
+    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล Google Ads สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+  document.getElementById('googleAdgroupTfoot').innerHTML = groups.length ? googleBreakdownRowHtml('รวมทั้งหมด', sumGoogleRows(rows)) : '';
+}
+function renderGoogleAds(){
+  const rows = googleRowsForProject();
+  const groups = groupGoogleBy(rows, r => r.ad);
+  document.getElementById('googleAdTbody').innerHTML = groups.length
+    ? groups.map(g => googleBreakdownRowHtml(g.key, g)).join('')
+    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล Google Ads สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+  document.getElementById('googleAdTfoot').innerHTML = groups.length ? googleBreakdownRowHtml('รวมทั้งหมด', sumGoogleRows(rows)) : '';
+}
+function renderGoogleAll(){
+  renderGoogleKpis();
+  renderGoogleCampaigns();
+  renderGoogleAdgroups();
+  renderGoogleAds();
+}
+
 // ---------- real per-chat ad attribution ----------
 // Meta's Insights/Marketing API does not expose which ad/ad set an existing conversation came from.
 // The only place that data exists is the "ad_id.<number>" label Meta itself attaches inside each
@@ -1490,19 +1677,24 @@ function renderAll(){
 
 // ---------- platform selector (Meta / TikTok / Google) ----------
 function renderCurrentPlatform(){
-  if (selectedPlatform === 'tiktok') renderTiktokAll(); else renderAll();
+  if (selectedPlatform === 'tiktok') renderTiktokAll();
+  else if (selectedPlatform === 'google') renderGoogleAll();
+  else renderAll();
 }
 function setPlatform(platform){
   selectedPlatform = platform;
   savePrefs({ selectedPlatform });
   document.getElementById('platMeta').classList.toggle('active', platform === 'meta');
   document.getElementById('platTiktok').classList.toggle('active', platform === 'tiktok');
+  document.getElementById('platGoogle').classList.toggle('active', platform === 'google');
   document.getElementById('metaSection').hidden = platform !== 'meta';
   document.getElementById('tiktokSection').hidden = platform !== 'tiktok';
+  document.getElementById('googleSection').hidden = platform !== 'google';
   renderCurrentPlatform();
 }
 document.getElementById('platMeta').addEventListener('click', () => setPlatform('meta'));
 document.getElementById('platTiktok').addEventListener('click', () => setPlatform('tiktok'));
+document.getElementById('platGoogle').addEventListener('click', () => setPlatform('google'));
 
 // ---------- live fetch (Meta Marketing API via the Cloudflare Worker's /api/insights route) ----------
 // Requires the Worker to have a META_ACCESS_TOKEN secret configured (see wrangler.jsonc / worker.js in
@@ -1593,7 +1785,7 @@ async function autoRefreshTick(){
 // ---------- boot ----------
 renderProjectSelect();
 renderAll();
-setPlatform(selectedPlatform); // applies the remembered Meta/TikTok choice (shows/hides sections, renders)
+setPlatform(selectedPlatform); // applies the remembered Meta/TikTok/Google choice (shows/hides sections, renders)
 autoRefreshTick(); // replace the manual Meta snapshot with live data for the rolling window right away
 autoRefreshTimer = setInterval(autoRefreshTick, AUTO_REFRESH_MINUTES * 60 * 1000);
 </script>
