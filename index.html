@@ -245,7 +245,7 @@
       <span class="sep">–</span>
       <input type="date" id="rangeComparisonEnd" class="date-input">
     </div>
-    <div class="range-hint">ค่าเริ่มต้นคือช่วง 7 วันล่าสุดแบบ rolling (อัพเดทอัตโนมัติทุก 15 นาทีที่เปิดหน้านี้ทิ้งไว้ ไม่ต้องกดเอง) หรือจะเลือกช่วงวันที่เองแล้วกด "ดึงข้อมูลสดตอนนี้" เพื่อดูช่วงอื่นแบบครั้งเดียวก็ได้ (ต้องตั้งค่า Meta token บน Cloudflare ก่อนใช้งานได้จริง)</div>
+    <div class="range-hint">ค่าเริ่มต้นคือช่วง 7 วันล่าสุดแบบ rolling (ดึงข้อมูลอัตโนมัติวันละ 1 ครั้งตอนเปิดหน้านี้ ไม่ต้องกดเอง) หรือจะเลือกช่วงวันที่เองแล้วกด "ดึงข้อมูลสดตอนนี้" เพื่อดูช่วงอื่นแบบครั้งเดียวก็ได้ (ต้องตั้งค่า Meta token บน Cloudflare ก่อนใช้งานได้จริง)</div>
   </div>
 
   <div class="kpi-grid" id="kpiGrid"></div>
@@ -301,7 +301,7 @@
     </table>
   </div>
 
-  <div class="footnote">แดชบอร์ดเชื่อมข้อมูลจริงจาก Meta Ads API · Project Mono = บัญชี 783833721188530 · Project Mews = บัญชี 1003863749343307 + 1822065945093567 · TikTok / Google อยู่ระหว่างออกแบบ ยังไม่มีข้อมูล · % สีเขียว/แดง เทียบกับช่วงเปรียบเทียบก่อนหน้า · ค่าเริ่มต้นคือ 7 วันล่าสุดแบบ rolling อัพเดทอัตโนมัติทุก 15 นาที</div>
+  <div class="footnote">แดชบอร์ดเชื่อมข้อมูลจริงจาก Meta Ads API · Project Mono = บัญชี 783833721188530 · Project Mews = บัญชี 1003863749343307 + 1822065945093567 · TikTok / Google อยู่ระหว่างออกแบบ ยังไม่มีข้อมูล · % สีเขียว/แดง เทียบกับช่วงเปรียบเทียบก่อนหน้า · ค่าเริ่มต้นคือ 7 วันล่าสุดแบบ rolling อัพเดทอัตโนมัติวันละ 1 ครั้ง (กดปุ่ม "ดึงข้อมูลสดตอนนี้" เพื่อดึงเองตอนไหนก็ได้)</div>
 </div>
 
 <script>
@@ -1312,11 +1312,12 @@ document.getElementById('rangeComparisonStart').value = liveRanges.comparison.si
 document.getElementById('rangeComparisonEnd').value = liveRanges.comparison.until;
 updateFreshBadge();
 
-// ---------- auto-refresh (rolling window, no manual click needed) ----------
+// ---------- auto-refresh (rolling window, once a day — not every few minutes) ----------
 // Recomputes the rolling N-day window from "today" and re-fetches live data automatically: once right
-// after the page loads, then again every AUTO_REFRESH_MINUTES while the tab stays open. This is what
-// keeps the dashboard current without the user having to click "ดึงข้อมูลสดตอนนี้" themselves.
-const AUTO_REFRESH_MINUTES = 15;
+// after the page loads, then again every AUTO_REFRESH_MINUTES (24h) if the tab is left open that long.
+// This intentionally does NOT poll every few minutes anymore — a manual click on "ดึงข้อมูลสดตอนนี้" still
+// fetches immediately any time, independent of this daily timer.
+const AUTO_REFRESH_MINUTES = 24 * 60;
 async function autoRefreshTick(){
   const fresh = computeRollingRanges(ROLLING_WINDOW_DAYS);
   liveRanges.primary = fresh.primary;

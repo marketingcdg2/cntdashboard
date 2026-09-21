@@ -2,19 +2,31 @@
 //
 // Serves the static dashboard (index.html) for normal requests, and proxies live Meta Marketing API
 // requests through /api/insights so the "ดึงข้อมูลสดตอนนี้" button in the dashboard can pull real,
-// current numbers without ever exposing a Meta access token in the browser.
+// current numbers.
 //
-// SETUP REQUIRED before the live-fetch button will work:
-//   1. In Meta Business Settings, create a System User (or use an existing one) with admin/analyst
-//      access to the ad accounts this dashboard reads (783833721188530, 1003863749343307,
-//      1822065945093567), and generate a token for it with the "ads_read" permission. System User
-//      tokens can be set to never expire, unlike a normal user access token (~60 days).
-//   2. In the Cloudflare dashboard: Workers & Pages -> cntdashboard -> Settings -> Variables and
-//      Secrets -> Add variable -> name it META_ACCESS_TOKEN, paste the token, toggle "Encrypt", save.
-//      Do this directly in the Cloudflare dashboard UI (or via `wrangler secret put
-//      META_ACCESS_TOKEN`) — never commit the token into this repo, which is public.
+// SETUP REQUIRED before the live-fetch button will work — pick ONE of the two options below:
 //
-// Until the secret is set, /api/insights returns a clear error instead of failing silently.
+//   Option A (recommended, keeps the token out of this public repo):
+//     1. In Meta Business Settings, create a System User (or use an existing one) with admin/analyst
+//        access to the ad accounts this dashboard reads (783833721188530, 1003863749343307,
+//        1822065945093567), and generate a token for it with the "ads_read" permission. System User
+//        tokens can be set to never expire, unlike a normal user access token (~60 days).
+//     2. In the Cloudflare dashboard: Workers & Pages -> cntdashboard -> Settings -> Variables and
+//        Secrets -> Add variable -> name it META_ACCESS_TOKEN, paste the token, toggle "Encrypt", save.
+//        (or via `wrangler secret put META_ACCESS_TOKEN`).
+//
+//   Option B (requested by the project owner for convenience — paste the token directly below):
+//     ⚠️ WARNING: this repo (marketingcdg2/cntdashboard) and the deployed site are PUBLIC. Anyone who
+//     views this file on GitHub, or views the Worker's source, can read a token pasted here and use it
+//     to call the Meta Ads API on your ad accounts. Prefer Option A when possible; use a token whose
+//     permissions you're comfortable being exposed (e.g. "ads_read" only, not a broader admin token),
+//     and be ready to rotate/revoke it in Meta Business Settings if that ever becomes a problem.
+//     To use this option: replace 'PASTE_YOUR_TOKEN_HERE' below with your real Meta access token, then
+//     commit. If both this and the Cloudflare secret (Option A) are set, the Cloudflare secret wins.
+const HARDCODED_META_ACCESS_TOKEN = 'PASTE_YOUR_TOKEN_HERE';
+//
+// Until a token is available from either option, /api/insights returns a clear error instead of
+// failing silently.
 
 const GRAPH_VERSION = 'v21.0';
 const MESSAGING_ACTION_TYPE = 'onsite_conversion.messaging_conversation_started_7d';
@@ -31,9 +43,14 @@ export default {
 };
 
 async function handleInsights(env, url) {
-  if (!env.META_ACCESS_TOKEN) {
+  // Cloudflare secret (Option A) takes priority if both are set; otherwise fall back to the token
+  // pasted directly into this file (Option B — see the warning comment at the top of this file).
+  const metaAccessToken =
+    env.META_ACCESS_TOKEN ||
+    (HARDCODED_META_ACCESS_TOKEN !== 'PASTE_YOUR_TOKEN_HERE' ? HARDCODED_META_ACCESS_TOKEN : null);
+  if (!metaAccessToken) {
     return jsonError(
-      'ยังไม่ได้ตั้งค่า META_ACCESS_TOKEN บน Cloudflare Worker นี้ — ไปที่ Workers & Pages > cntdashboard > Settings > Variables and Secrets แล้วเพิ่ม permanent token จาก Meta Business Settings ก่อน',
+      'ยังไม่ได้ตั้งค่า Meta access token — ตั้งเป็น META_ACCESS_TOKEN บน Cloudflare Worker (Workers & Pages > cntdashboard > Settings > Variables and Secrets) หรือแก้ HARDCODED_META_ACCESS_TOKEN ที่ด้านบนของไฟล์ worker.js ก็ได้',
       500
     );
   }
@@ -59,7 +76,7 @@ async function handleInsights(env, url) {
         `https://graph.facebook.com/${GRAPH_VERSION}/act_${accountId}/insights` +
         `?level=ad&fields=${encodeURIComponent(fields)}` +
         `&time_range=${encodeURIComponent(timeRange)}` +
-        `&limit=500&access_token=${encodeURIComponent(env.META_ACCESS_TOKEN)}`;
+        `&limit=500&access_token=${encodeURIComponent(metaAccessToken)}`;
 
       let pageCount = 0;
       while (nextUrl && pageCount < 20) {
