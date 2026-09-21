@@ -226,12 +226,13 @@
       <span class="control-label">แพลตฟอร์ม</span>
       <div class="platform-btns">
         <button class="platform-btn active" id="platMeta" type="button">Meta</button>
-        <button class="platform-btn" type="button" disabled title="อยู่ระหว่างออกแบบ">TikTok<span class="platform-soon">เร็วๆ นี้</span></button>
+        <button class="platform-btn" id="platTiktok" type="button">TikTok</button>
         <button class="platform-btn" type="button" disabled title="อยู่ระหว่างออกแบบ">Google<span class="platform-soon">เร็วๆ นี้</span></button>
       </div>
     </div>
   </div>
 
+  <div id="metaSection">
   <div class="control-bar">
     <div class="control-group">
       <span class="control-label">ช่วงหลัก</span>
@@ -301,7 +302,89 @@
     </table>
   </div>
 
-  <div class="footnote">แดชบอร์ดเชื่อมข้อมูลจริงจาก Meta Ads API · Project Mono = บัญชี 783833721188530 · Project Mews = บัญชี 1003863749343307 + 1822065945093567 · TikTok / Google อยู่ระหว่างออกแบบ ยังไม่มีข้อมูล · % สีเขียว/แดง เทียบกับช่วงเปรียบเทียบก่อนหน้า · ค่าเริ่มต้นคือ 7 วันล่าสุดแบบ rolling อัพเดทอัตโนมัติวันละ 1 ครั้ง (กดปุ่ม "ดึงข้อมูลสดตอนนี้" เพื่อดึงเองตอนไหนก็ได้)</div>
+  <div class="footnote">แดชบอร์ดเชื่อมข้อมูลจริงจาก Meta Ads API · Project Mono = บัญชี 783833721188530 · Project Mews = บัญชี 1003863749343307 + 1822065945093567 · Google อยู่ระหว่างออกแบบ ยังไม่มีข้อมูล · % สีเขียว/แดง เทียบกับช่วงเปรียบเทียบก่อนหน้า · ค่าเริ่มต้นคือ 7 วันล่าสุดแบบ rolling อัพเดทอัตโนมัติวันละ 1 ครั้ง (กดปุ่ม "ดึงข้อมูลสดตอนนี้" เพื่อดึงเองตอนไหนก็ได้)</div>
+  </div>
+
+  <div id="tiktokSection" hidden>
+    <div class="control-bar">
+      <div class="control-group">
+        <span class="control-label">ข้อมูล</span>
+        <span id="tiktokAsOf" style="font-size:12.5px;color:var(--text-secondary);"></span>
+      </div>
+      <div class="range-hint">ข้อมูล TikTok เป็นแบบนำเข้าจากไฟล์ Excel ที่ export จาก TikTok Ads Manager (Basic Data) ด้วยมือ ไม่ใช่ข้อมูลสดแบบ Meta — อัพเดทเมื่อมีการนำเข้าไฟล์ใหม่เท่านั้น</div>
+    </div>
+
+    <div class="kpi-grid" id="tiktokKpiGrid"></div>
+
+    <div class="section-title">สรุปตาม Objective</div>
+    <div class="section-note">รวมผลลัพธ์ของแคมเปญที่มี Objective เดียวกันเข้าด้วยกัน · ใช้เฉพาะคอลัมน์ Basic Data ที่ export ตรงจาก TikTok Ads Manager ได้เลย ไม่มีการแท็กข้อมูลมือเพิ่มเติม</div>
+    <div class="card table-scroll">
+      <table id="tiktokObjTable" class="obj-table">
+        <thead>
+          <tr>
+            <th>Objective</th>
+            <th>Cost</th>
+            <th>Impressions</th>
+            <th>Reach</th>
+            <th>Clicks (all)</th>
+            <th>CTR</th>
+            <th>CPM</th>
+            <th>Conversions</th>
+            <th>Cost / Conversion</th>
+          </tr>
+        </thead>
+        <tbody id="tiktokObjTbody"></tbody>
+        <tfoot id="tiktokObjTfoot"></tfoot>
+      </table>
+    </div>
+
+    <div class="section-title">สรุปตามกลุ่มโฆษณา (Ad Group)</div>
+    <div class="section-note">กลุ่มโฆษณา (Ad Group) ชื่อเดียวกันที่ใช้ซ้ำในหลายแคมเปญถูกรวมยอดไว้แถวเดียวกัน</div>
+    <div class="card table-scroll">
+      <table id="tiktokAdgroupTable" class="obj-table">
+        <thead>
+          <tr>
+            <th>กลุ่มโฆษณา</th>
+            <th>Cost</th>
+            <th>Impressions</th>
+            <th>Reach</th>
+            <th>Clicks (all)</th>
+            <th>CTR</th>
+            <th>CPM</th>
+            <th>Conversions</th>
+            <th>Cost / Conversion</th>
+          </tr>
+        </thead>
+        <tbody id="tiktokAdgroupTbody"></tbody>
+        <tfoot id="tiktokAdgroupTfoot"></tfoot>
+      </table>
+    </div>
+
+    <div class="section-title">สรุปตามโฆษณา (Ad)</div>
+    <div class="section-note">โฆษณา (ชื่อ Ad) เดียวกันที่ถูกใช้ในหลายแคมเปญ/กลุ่มโฆษณา ถูกรวมยอดไว้แถวเดียวกัน</div>
+    <div class="card table-scroll">
+      <table id="tiktokAdTable">
+        <thead>
+          <tr>
+            <th>โฆษณา (Ad)</th>
+            <th>Cost</th>
+            <th>Impressions</th>
+            <th>Reach</th>
+            <th>Clicks (all)</th>
+            <th>CTR</th>
+            <th>CPM</th>
+            <th>Conversions</th>
+            <th>Cost / Conversion</th>
+          </tr>
+        </thead>
+        <tbody id="tiktokAdTbody"></tbody>
+        <tfoot id="tiktokAdTfoot"></tfoot>
+      </table>
+    </div>
+
+    <div class="footnote">ข้อมูล TikTok มาจากรายงาน "Basic Data" ที่ export เป็น Excel ตรงจาก TikTok Ads Manager (Campaign/Ad group/Ad + Cost, Impressions, Reach, Frequency, Clicks (all), Clicks (destination), CPC (destination), CPM, CTR, Conversions, Conversion rate (CVR), Cost per conversion) · Project Mono / Project Mews แยกตามที่แท็กไว้ตอนนำเข้าไฟล์ · ยังไม่มี Inbox/Walk-in/Add-Line แบบ Meta เพราะ TikTok Basic Data ไม่มีคอลัมน์นี้ให้ export ตรงๆ</div>
+  </div>
+
 </div>
 
 <script>
@@ -806,6 +889,7 @@ function savePrefs(patch){
 const dashboardPrefs = loadPrefs();
 
 let selectedProject = dashboardPrefs.selectedProject || 'mono'; // 'mono' | 'mews'
+let selectedPlatform = dashboardPrefs.selectedPlatform || 'meta'; // 'meta' | 'tiktok'
 const openAudiences = new Set();
 
 // chat id -> 'qualify' | 'nonqualify' | 'walkin'. Persisted to this browser's localStorage so ticking a
@@ -997,6 +1081,129 @@ function renderContentTable(){
       <td>${naDash}</td>
       <td>${naDash}</td>
     </tr>`;
+}
+
+// ---------- TikTok (manual Excel import — no live API connection yet) ----------
+// TikTok isn't connected to a live API. Data here is imported by hand from the "Basic Data" report
+// exported as Excel directly from TikTok Ads Manager, at Campaign / Ad group / Ad level. Paste rows into
+// tiktokRaw below using EXACTLY this shape — every field maps 1:1 to one of TikTok's own Basic Data
+// column names (https://ads.tiktok.com/help/article/basic-data), so nothing here needs to be derived,
+// except `project` (Mono/Mews isn't a TikTok column — tag each row by hand when importing) and spelling
+// `objective` out using TikTok's own campaign objective names (Reach, Traffic, Video Views, Community
+// Interaction, Lead Generation, Website Conversions, App Promotion, etc. — whatever this account uses).
+//
+//   TikTok Basic Data column      -> field here
+//   ----------------------------     -----------------
+//   Campaign name                 -> campaign
+//   Ad group name                 -> adgroup
+//   Ad name                       -> ad
+//   (campaign Objective)          -> objective
+//   Cost                          -> cost
+//   Impressions                   -> impressions
+//   Reach                         -> reach
+//   Frequency                     -> frequency
+//   Clicks (all)                  -> clicksAll
+//   Clicks (destination)          -> clicksDestination
+//   CPC (destination)             -> cpcDestination
+//   CPM                           -> cpm
+//   CTR                           -> ctr                 (%, e.g. 1.85 means 1.85%)
+//   Conversions                   -> conversions
+//   Conversion rate (CVR)         -> cvr                 (%, of impressions — TikTok's own definition)
+//   Cost per conversion           -> costPerConversion
+//
+// The KPI/breakdown tables below re-derive CTR/CPM/CVR/Cost-per-conversion from the summed base numbers
+// when grouping several rows together (never by averaging the per-row percentages — that double-counts
+// unevenly-sized rows), so importing the base counts correctly matters more than the ratio columns.
+const tiktokAsOfDate = null; // e.g. '10 - 16 ก.ย. 2026' — set this to the date range on the file you imported
+const tiktokRaw = [
+  // {project:'mono', campaign:'', adgroup:'', ad:'', objective:'Reach', cost:0, impressions:0, reach:0, frequency:0, clicksAll:0, clicksDestination:0, cpcDestination:0, cpm:0, ctr:0, conversions:0, cvr:0, costPerConversion:0},
+];
+
+function tiktokRowsForProject(project){
+  const p = project || selectedProject;
+  return tiktokRaw.filter(r => r.project === p);
+}
+function sumTiktokRows(rows){
+  const s = { cost:0, impressions:0, reach:0, frequency:0, clicksAll:0, clicksDestination:0, conversions:0, count: rows.length };
+  for (const r of rows){
+    s.cost += r.cost || 0;
+    s.impressions += r.impressions || 0;
+    s.reach += r.reach || 0;
+    s.clicksAll += r.clicksAll || 0;
+    s.clicksDestination += r.clicksDestination || 0;
+    s.conversions += r.conversions || 0;
+  }
+  s.ctr = s.impressions ? (s.clicksAll / s.impressions * 100) : 0;
+  s.cpm = s.impressions ? (s.cost / s.impressions * 1000) : 0;
+  s.cvr = s.impressions ? (s.conversions / s.impressions * 100) : 0;
+  s.costPerConversion = s.conversions ? (s.cost / s.conversions) : null;
+  return s;
+}
+function groupTiktokBy(rows, keyFn){
+  const map = new Map();
+  for (const r of rows){
+    const key = keyFn(r) || '(ไม่มีชื่อ)';
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(r);
+  }
+  return [...map.entries()].map(([key, groupRows]) => ({ key, ...sumTiktokRows(groupRows) }));
+}
+const fmtPct1 = n => (Math.round((n || 0) * 10) / 10).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+function tiktokBreakdownRowHtml(label, s){
+  return `
+    <tr>
+      <td>${label}</td>
+      <td>${fmtBaht(s.cost)}</td>
+      <td>${fmtInt(s.impressions)}</td>
+      <td>${fmtInt(s.reach)}</td>
+      <td>${fmtInt(s.clicksAll)}</td>
+      <td>${fmtPct1(s.ctr)}</td>
+      <td>${fmtBaht(s.cpm)}</td>
+      <td>${fmtInt(s.conversions)}</td>
+      <td>${s.costPerConversion != null ? fmtBaht(s.costPerConversion) : naDash}</td>
+    </tr>`;
+}
+function renderTiktokKpis(){
+  const s = sumTiktokRows(tiktokRowsForProject());
+  document.getElementById('tiktokAsOf').textContent = tiktokAsOfDate ? `ข้อมูล ณ วันที่ ${tiktokAsOfDate}` : 'ยังไม่มีการนำเข้าไฟล์ — รอไฟล์ Excel';
+  document.getElementById('tiktokKpiGrid').innerHTML = `
+    <div class="tile"><div class="label">Cost รวม</div><div class="value">${fmtBaht(s.cost)}</div></div>
+    <div class="tile"><div class="label">Impressions รวม</div><div class="value">${fmtInt(s.impressions)}</div></div>
+    <div class="tile"><div class="label">Reach รวม</div><div class="value">${fmtInt(s.reach)}</div></div>
+    <div class="tile"><div class="label">Clicks (all) รวม</div><div class="value">${fmtInt(s.clicksAll)}</div></div>
+    <div class="tile"><div class="label">CTR เฉลี่ย</div><div class="value">${fmtPct1(s.ctr)}</div></div>
+    <div class="tile"><div class="label">Conversions รวม</div><div class="value">${fmtInt(s.conversions)}</div></div>
+  `;
+}
+function renderTiktokObjective(){
+  const rows = tiktokRowsForProject();
+  const groups = groupTiktokBy(rows, r => r.objective);
+  document.getElementById('tiktokObjTbody').innerHTML = groups.length
+    ? groups.map(g => tiktokBreakdownRowHtml(`<span class="obj-badge awareness">${g.key}</span>`, g)).join('')
+    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล TikTok สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+  document.getElementById('tiktokObjTfoot').innerHTML = groups.length ? tiktokBreakdownRowHtml('รวมทั้งหมด', sumTiktokRows(rows)) : '';
+}
+function renderTiktokAdgroups(){
+  const rows = tiktokRowsForProject();
+  const groups = groupTiktokBy(rows, r => r.adgroup);
+  document.getElementById('tiktokAdgroupTbody').innerHTML = groups.length
+    ? groups.map(g => tiktokBreakdownRowHtml(g.key, g)).join('')
+    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล TikTok สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+  document.getElementById('tiktokAdgroupTfoot').innerHTML = groups.length ? tiktokBreakdownRowHtml('รวมทั้งหมด', sumTiktokRows(rows)) : '';
+}
+function renderTiktokAds(){
+  const rows = tiktokRowsForProject();
+  const groups = groupTiktokBy(rows, r => r.ad);
+  document.getElementById('tiktokAdTbody').innerHTML = groups.length
+    ? groups.map(g => tiktokBreakdownRowHtml(g.key, g)).join('')
+    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล TikTok สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+  document.getElementById('tiktokAdTfoot').innerHTML = groups.length ? tiktokBreakdownRowHtml('รวมทั้งหมด', sumTiktokRows(rows)) : '';
+}
+function renderTiktokAll(){
+  renderTiktokKpis();
+  renderTiktokObjective();
+  renderTiktokAdgroups();
+  renderTiktokAds();
 }
 
 // ---------- real per-chat ad attribution ----------
@@ -1269,7 +1476,7 @@ function renderProjectSelect(){
     selectedProject = sel.value;
     savePrefs({ selectedProject });
     openAudiences.clear();
-    renderAll();
+    renderCurrentPlatform();
   };
 }
 
@@ -1280,6 +1487,22 @@ function renderAll(){
   renderAudienceRows();
   renderContentTable();
 }
+
+// ---------- platform selector (Meta / TikTok / Google) ----------
+function renderCurrentPlatform(){
+  if (selectedPlatform === 'tiktok') renderTiktokAll(); else renderAll();
+}
+function setPlatform(platform){
+  selectedPlatform = platform;
+  savePrefs({ selectedPlatform });
+  document.getElementById('platMeta').classList.toggle('active', platform === 'meta');
+  document.getElementById('platTiktok').classList.toggle('active', platform === 'tiktok');
+  document.getElementById('metaSection').hidden = platform !== 'meta';
+  document.getElementById('tiktokSection').hidden = platform !== 'tiktok';
+  renderCurrentPlatform();
+}
+document.getElementById('platMeta').addEventListener('click', () => setPlatform('meta'));
+document.getElementById('platTiktok').addEventListener('click', () => setPlatform('tiktok'));
 
 // ---------- live fetch (Meta Marketing API via the Cloudflare Worker's /api/insights route) ----------
 // Requires the Worker to have a META_ACCESS_TOKEN secret configured (see wrangler.jsonc / worker.js in
@@ -1370,7 +1593,8 @@ async function autoRefreshTick(){
 // ---------- boot ----------
 renderProjectSelect();
 renderAll();
-autoRefreshTick(); // replace the manual snapshot with live data for the rolling window right away
+setPlatform(selectedPlatform); // applies the remembered Meta/TikTok choice (shows/hides sections, renders)
+autoRefreshTick(); // replace the manual Meta snapshot with live data for the rolling window right away
 autoRefreshTimer = setInterval(autoRefreshTick, AUTO_REFRESH_MINUTES * 60 * 1000);
 </script>
 </body>
