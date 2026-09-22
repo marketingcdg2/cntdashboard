@@ -394,10 +394,17 @@
   <div id="googleSection" hidden>
     <div class="control-bar">
       <div class="control-group">
+        <span class="control-label">ช่วงวันที่</span>
+        <input type="date" id="googleRangeStart" class="date-input">
+        <span>ถึง</span>
+        <input type="date" id="googleRangeEnd" class="date-input">
+        <button class="badge live-fetch-btn" id="googleApplyRangeBtn" type="button">แสดงตามช่วงนี้</button>
+      </div>
+      <div class="control-group">
         <span class="control-label">ข้อมูล</span>
         <span id="googleAsOf" style="font-size:12.5px;color:var(--text-secondary);"></span>
       </div>
-      <div class="range-hint">ข้อมูล Google Ads เป็นแบบนำเข้าจากไฟล์ Excel ที่ export จาก Google Ads (ตารางสถิติมาตรฐาน/Campaigns, Ad groups, Ads) ด้วยมือ ไม่ใช่ข้อมูลสดแบบ Meta — อัพเดทเมื่อมีการนำเข้าไฟล์ใหม่เท่านั้น</div>
+      <div class="range-hint">ข้อมูล Google Ads เป็นแบบนำเข้าจากไฟล์ Excel/CSV ที่ export จาก Google Ads (Campaign + Ad group + Day) ด้วยมือ ไม่ใช่ข้อมูลสดแบบ Meta — เนื้อหาอัพเดทเมื่อมีการนำเข้าไฟล์ใหม่เท่านั้น แต่ตัวเลขที่แสดงจะกรองตามช่วงวันที่ที่เลือกด้านบนจากข้อมูลที่นำเข้าไว้ล่าสุดเสมอ</div>
     </div>
 
     <div class="kpi-grid" id="googleKpiGrid"></div>
@@ -1328,14 +1335,101 @@ function renderTiktokAll(){
 // per-row percentage/ratio columns, since that distorts the result when rows have very different volumes.
 // Google Ads has no Project (Mono/Mews) column of its own, so — same as TikTok — that has to be tagged by
 // hand per row when pasting data in.
-const googleAsOfDate = null; // e.g. '10 - 16 ก.ย. 2026' — set this to the date range on the file you imported
+// Imported 2026-09-22 from Google Ads Report Editor (Campaign performance report, Campaign + Ad group +
+// Day dimensions), account "ชนันธร ดีเวลลอปเม้นท์" (ocid 8508563959), date range exported: 1–22 ก.ย. 2026.
+// This account's earliest available data is 2026-09-01 — there is no August data to pull.
+// Ad-level breakdown is not available: every ad group in this account currently has exactly one
+// Responsive Search Ad in it (confirmed live on the Ads page — 3 active ad groups, 3 active ads, 1:1:1
+// with their campaigns), so `ad` is set equal to `adgroup` here and the three tables below end up
+// showing the same rows — that's an accurate reflection of the account, not a shortcut.
+const googleAsOfDate = '1 - 22 ก.ย. 2026'; // date range covered by the last import (see googleRaw below)
 const googleRaw = [
-  // {project:'mono', campaign:'', adgroup:'', ad:'', impressions:0, clicks:0, cost:0, conversions:0},
+  // {project:'mono', date:'YYYY-MM-DD', campaign:'', adgroup:'', ad:'', impressions:0, clicks:0, cost:0, conversions:0},
+  {project:'mono', date:'2026-09-02', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:4, clicks:3, cost:70.74, conversions:0},
+  {project:'mono', date:'2026-09-13', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:8, clicks:4, cost:334.91, conversions:0},
+  {project:'mono', date:'2026-09-15', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:9, clicks:3, cost:214.94, conversions:0},
+  {project:'mono', date:'2026-09-06', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:18, clicks:5, cost:420.39, conversions:0},
+  {project:'mono', date:'2026-09-21', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:15, clicks:4, cost:243.10, conversions:0},
+  {project:'mono', date:'2026-09-18', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:31, clicks:8, cost:304.56, conversions:0},
+  {project:'mono', date:'2026-09-19', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:12, clicks:3, cost:198.49, conversions:0},
+  {project:'mono', date:'2026-09-02', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:5, clicks:1, cost:28.86, conversions:0},
+  {project:'mono', date:'2026-09-22', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:5, clicks:1, cost:61.45, conversions:0},
+  {project:'mono', date:'2026-09-04', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:33, clicks:6, cost:470.86, conversions:0},
+  {project:'mono', date:'2026-09-14', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:17, clicks:3, cost:235.03, conversions:0},
+  {project:'mono', date:'2026-09-20', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:19, clicks:3, cost:132.61, conversions:0},
+  {project:'mono', date:'2026-09-14', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:67, clicks:10, cost:102.36, conversions:0},
+  {project:'mono', date:'2026-09-19', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:65, clicks:9, cost:75.26, conversions:0},
+  {project:'mono', date:'2026-09-11', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:23, clicks:3, cost:236.47, conversions:0},
+  {project:'mono', date:'2026-09-05', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:32, clicks:4, cost:248.15, conversions:0},
+  {project:'mono', date:'2026-09-10', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:16, clicks:2, cost:253.32, conversions:0},
+  {project:'mono', date:'2026-09-07', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:34, clicks:4, cost:442.34, conversions:0},
+  {project:'mono', date:'2026-09-16', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:31, clicks:3, cost:206.31, conversions:0},
+  {project:'mono', date:'2026-09-09', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:104, clicks:10, cost:129.17, conversions:0},
+  {project:'mono', date:'2026-09-16', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:117, clicks:11, cost:91.27, conversions:0},
+  {project:'mono', date:'2026-09-11', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:88, clicks:8, cost:95.60, conversions:0},
+  {project:'mono', date:'2026-09-18', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:116, clicks:10, cost:88.35, conversions:0},
+  {project:'mono', date:'2026-09-15', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:145, clicks:12, cost:100.86, conversions:0},
+  {project:'mono', date:'2026-09-11', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:138, clicks:11, cost:104.62, conversions:0},
+  {project:'mono', date:'2026-09-17', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:26, clicks:2, cost:90.05, conversions:0},
+  {project:'mono', date:'2026-09-13', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:171, clicks:13, cost:111.63, conversions:0},
+  {project:'mono', date:'2026-09-08', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:55, clicks:4, cost:359.78, conversions:0},
+  {project:'mono', date:'2026-09-09', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:98, clicks:6, cost:118.68, conversions:0},
+  {project:'mono', date:'2026-09-14', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:180, clicks:11, cost:107.32, conversions:0},
+  {project:'mono', date:'2026-09-17', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:213, clicks:13, cost:118.24, conversions:0},
+  {project:'mono', date:'2026-09-07', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:361, clicks:22, cost:282.96, conversions:0},
+  {project:'mono', date:'2026-09-22', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:71, clicks:4, cost:38.43, conversions:0},
+  {project:'mono', date:'2026-09-10', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:181, clicks:10, cost:107.49, conversions:0},
+  {project:'mono', date:'2026-09-22', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:58, clicks:3, cost:33.23, conversions:0},
+  {project:'mono', date:'2026-09-20', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:173, clicks:8, cost:83.29, conversions:0},
+  {project:'mono', date:'2026-09-03', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:564, clicks:26, cost:561.44, conversions:0},
+  {project:'mono', date:'2026-09-15', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:217, clicks:10, cost:110.69, conversions:0},
+  {project:'mono', date:'2026-09-08', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:505, clicks:23, cost:324.85, conversions:0},
+  {project:'mono', date:'2026-09-06', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:485, clicks:22, cost:327.79, conversions:0},
+  {project:'mono', date:'2026-09-12', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:204, clicks:9, cost:97.00, conversions:0},
+  {project:'mono', date:'2026-09-20', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:296, clicks:13, cost:118.08, conversions:0},
+  {project:'mono', date:'2026-09-09', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:23, clicks:1, cost:300.63, conversions:0},
+  {project:'mono', date:'2026-09-12', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:184, clicks:8, cost:110.34, conversions:0},
+  {project:'mono', date:'2026-09-17', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:214, clicks:9, cost:109.90, conversions:0},
+  {project:'mono', date:'2026-09-16', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:216, clicks:9, cost:107.90, conversions:0},
+  {project:'mono', date:'2026-09-18', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:189, clicks:7, cost:78.51, conversions:0},
+  {project:'mono', date:'2026-09-10', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:202, clicks:7, cost:109.81, conversions:0},
+  {project:'mono', date:'2026-09-21', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:320, clicks:11, cost:109.79, conversions:0},
+  {project:'mono', date:'2026-09-12', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:31, clicks:1, cost:57.30, conversions:0},
+  {project:'mono', date:'2026-09-05', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:560, clicks:18, cost:317.66, conversions:0},
+  {project:'mono', date:'2026-09-13', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:252, clicks:8, cost:106.40, conversions:0},
+  {project:'mono', date:'2026-09-21', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:287, clicks:9, cost:103.15, conversions:0},
+  {project:'mono', date:'2026-09-07', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:294, clicks:9, cost:274.24, conversions:0},
+  {project:'mono', date:'2026-09-04', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:291, clicks:7, cost:369.94, conversions:0},
+  {project:'mono', date:'2026-09-19', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:414, clicks:9, cost:124.35, conversions:0},
+  {project:'mono', date:'2026-09-04', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:701, clicks:15, cost:302.80, conversions:0},
+  {project:'mono', date:'2026-09-05', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:437, clicks:8, cost:328.14, conversions:0},
+  {project:'mono', date:'2026-09-06', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:464, clicks:8, cost:333.98, conversions:0},
+  {project:'mono', date:'2026-09-03', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:552, clicks:8, cost:598.14, conversions:0},
+  {project:'mono', date:'2026-09-08', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:726, clicks:10, cost:329.36, conversions:0},
+  {project:'mono', date:'2026-09-03', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:41, clicks:0, cost:0.00, conversions:0},
+  {project:'mono', date:'2026-09-02', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:6, clicks:0, cost:0.00, conversions:0},
+  {project:'mono', date:'2026-09-01', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:0, clicks:0, cost:0.00, conversions:0},
 ];
 
+// Returns this project's rows filtered to the currently-selected primary date range (liveRanges.primary),
+// the same range the Meta date pickers control — so switching to the Google tab after picking a range
+// shows the matching Google numbers, same as the requirement that numbers change with the date picker.
 function googleRowsForProject(project){
   const p = project || selectedProject;
+  return googleRaw.filter(r => r.project === p && (!r.date || (r.date >= liveRanges.primary.since && r.date <= liveRanges.primary.until)));
+}
+// Unfiltered-by-date rows for this project — used to tell "no data imported at all" apart from "no data
+// in the selected range" and to report the actual imported coverage in the UI.
+function googleAllRowsForProject(project){
+  const p = project || selectedProject;
   return googleRaw.filter(r => r.project === p);
+}
+function googleImportedRange(project){
+  const rows = googleAllRowsForProject(project).filter(r => r.date);
+  if (!rows.length) return null;
+  let min = rows[0].date, max = rows[0].date;
+  for (const r of rows){ if (r.date < min) min = r.date; if (r.date > max) max = r.date; }
+  return { min, max };
 }
 function sumGoogleRows(rows){
   const s = { cost:0, impressions:0, clicks:0, conversions:0, count: rows.length };
@@ -1374,9 +1468,22 @@ function googleBreakdownRowHtml(label, s){
       <td>${fmtPct1(s.convRate)}</td>
     </tr>`;
 }
+// The empty-state message used by all three Google tables when the current project + selected date
+// range has no rows — distinguishes "nothing imported for this project at all" from "data exists but
+// not in the range currently picked" (mirrors the same distinction the chat list makes for its range).
+function googleEmptyStateHtml(){
+  const imported = googleImportedRange();
+  const msg = imported
+    ? `ไม่มีข้อมูล Google Ads ในช่วงวันที่ที่เลือก (${liveRanges.primary.since} – ${liveRanges.primary.until}) — ข้อมูลที่นำเข้าไว้ล่าสุดครอบคลุมช่วง ${imported.min} – ${imported.max} ลองเลือกช่วงวันที่ให้ครอบคลุมช่วงนี้`
+    : 'ยังไม่มีข้อมูล Google Ads สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel/CSV';
+  return `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">${msg}</td></tr>`;
+}
 function renderGoogleKpis(){
   const s = sumGoogleRows(googleRowsForProject());
-  document.getElementById('googleAsOf').textContent = googleAsOfDate ? `ข้อมูล ณ วันที่ ${googleAsOfDate}` : 'ยังไม่มีการนำเข้าไฟล์ — รอไฟล์ Excel';
+  const imported = googleImportedRange();
+  document.getElementById('googleAsOf').textContent = imported
+    ? `แสดงผลช่วง ${liveRanges.primary.since} – ${liveRanges.primary.until} · ข้อมูลนำเข้าล่าสุดครอบคลุม ${imported.min} – ${imported.max}`
+    : 'ยังไม่มีการนำเข้าไฟล์ — รอไฟล์ Excel/CSV';
   document.getElementById('googleKpiGrid').innerHTML = `
     <div class="tile"><div class="label">Cost รวม</div><div class="value">${fmtBaht(s.cost)}</div></div>
     <div class="tile"><div class="label">Impressions รวม</div><div class="value">${fmtInt(s.impressions)}</div></div>
@@ -1391,7 +1498,7 @@ function renderGoogleCampaigns(){
   const groups = groupGoogleBy(rows, r => r.campaign);
   document.getElementById('googleCampaignTbody').innerHTML = groups.length
     ? groups.map(g => googleBreakdownRowHtml(g.key, g)).join('')
-    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล Google Ads สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+    : googleEmptyStateHtml();
   document.getElementById('googleCampaignTfoot').innerHTML = groups.length ? googleBreakdownRowHtml('รวมทั้งหมด', sumGoogleRows(rows)) : '';
 }
 function renderGoogleAdgroups(){
@@ -1399,7 +1506,7 @@ function renderGoogleAdgroups(){
   const groups = groupGoogleBy(rows, r => r.adgroup);
   document.getElementById('googleAdgroupTbody').innerHTML = groups.length
     ? groups.map(g => googleBreakdownRowHtml(g.key, g)).join('')
-    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล Google Ads สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+    : googleEmptyStateHtml();
   document.getElementById('googleAdgroupTfoot').innerHTML = groups.length ? googleBreakdownRowHtml('รวมทั้งหมด', sumGoogleRows(rows)) : '';
 }
 function renderGoogleAds(){
@@ -1407,7 +1514,7 @@ function renderGoogleAds(){
   const groups = groupGoogleBy(rows, r => r.ad);
   document.getElementById('googleAdTbody').innerHTML = groups.length
     ? groups.map(g => googleBreakdownRowHtml(g.key, g)).join('')
-    : `<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:14px;">ยังไม่มีข้อมูล Google Ads สำหรับโปรเจคนี้ — รอนำเข้าไฟล์ Excel</td></tr>`;
+    : googleEmptyStateHtml();
   document.getElementById('googleAdTfoot').innerHTML = groups.length ? googleBreakdownRowHtml('รวมทั้งหมด', sumGoogleRows(rows)) : '';
 }
 function renderGoogleAll(){
@@ -1802,7 +1909,6 @@ async function fetchLiveData(isManual = true){
     ALL_COMPARISON = comparisonLists.flat();
     lastFetchedAt = new Date();
     updateFreshBadge();
-    renderAll();
   } catch (e) {
     errBox.hidden = false;
     errBox.textContent = '⚠️ ดึงข้อมูลสดไม่สำเร็จ: ' + (e && e.message ? e.message : String(e));
@@ -1810,12 +1916,32 @@ async function fetchLiveData(isManual = true){
     btn.disabled = false;
     btn.textContent = '🔄 ดึงข้อมูลสดตอนนี้';
   }
+  syncRangeInputs();
+  renderCurrentPlatform(); // re-render whichever platform tab is active (Meta/TikTok/Google) with the new range
+}
+// Keeps every date-input pair (Meta's primary/comparison pickers and Google's own picker) showing the
+// same liveRanges values, regardless of which control last changed them.
+function syncRangeInputs(){
+  document.getElementById('rangePrimaryStart').value = liveRanges.primary.since;
+  document.getElementById('rangePrimaryEnd').value = liveRanges.primary.until;
+  document.getElementById('rangeComparisonStart').value = liveRanges.comparison.since;
+  document.getElementById('rangeComparisonEnd').value = liveRanges.comparison.until;
+  document.getElementById('googleRangeStart').value = liveRanges.primary.since;
+  document.getElementById('googleRangeEnd').value = liveRanges.primary.until;
 }
 document.getElementById('fetchLiveBtn').addEventListener('click', () => fetchLiveData(true));
-document.getElementById('rangePrimaryStart').value = liveRanges.primary.since;
-document.getElementById('rangePrimaryEnd').value = liveRanges.primary.until;
-document.getElementById('rangeComparisonStart').value = liveRanges.comparison.since;
-document.getElementById('rangeComparisonEnd').value = liveRanges.comparison.until;
+document.getElementById('googleApplyRangeBtn').addEventListener('click', () => {
+  // Google Ads data isn't live-fetched — this just re-filters the already-imported rows to the picked
+  // range (same liveRanges.primary the Meta picker uses) and remembers the choice the same way.
+  const s = document.getElementById('googleRangeStart').value;
+  const e = document.getElementById('googleRangeEnd').value;
+  if (s) liveRanges.primary.since = s;
+  if (e) liveRanges.primary.until = e;
+  savePrefs({ customRange: { primary: { ...liveRanges.primary }, comparison: { ...liveRanges.comparison } } });
+  syncRangeInputs();
+  renderCurrentPlatform();
+});
+syncRangeInputs();
 updateFreshBadge();
 
 // ---------- auto-refresh (rolling window, once a day — not every few minutes) ----------
@@ -1834,10 +1960,7 @@ async function autoRefreshTick(){
     const fresh = computeRollingRanges(ROLLING_WINDOW_DAYS);
     liveRanges.primary = fresh.primary;
     liveRanges.comparison = fresh.comparison;
-    document.getElementById('rangePrimaryStart').value = liveRanges.primary.since;
-    document.getElementById('rangePrimaryEnd').value = liveRanges.primary.until;
-    document.getElementById('rangeComparisonStart').value = liveRanges.comparison.since;
-    document.getElementById('rangeComparisonEnd').value = liveRanges.comparison.until;
+    syncRangeInputs();
   }
   await fetchLiveData(false);
 }
