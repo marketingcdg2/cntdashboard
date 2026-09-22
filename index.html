@@ -1336,12 +1336,14 @@ function renderTiktokAll(){
 // Google Ads has no Project (Mono/Mews) column of its own, so — same as TikTok — that has to be tagged by
 // hand per row when pasting data in.
 // Imported 2026-09-22 from Google Ads Report Editor (Campaign performance report, Campaign + Ad group +
-// Day dimensions), account "ชนันธร ดีเวลลอปเม้นท์" (ocid 8508563959), date range exported: 1–22 ก.ย. 2026.
-// This account's earliest available data is 2026-09-01 — there is no August data to pull.
-// Ad-level breakdown is not available: every ad group in this account currently has exactly one
-// Responsive Search Ad in it (confirmed live on the Ads page — 3 active ad groups, 3 active ads, 1:1:1
-// with their campaigns), so `ad` is set equal to `adgroup` here and the three tables below end up
-// showing the same rows — that's an accurate reflection of the account, not a shortcut.
+// Day dimensions), two accounts, date range exported: 1–22 ก.ย. 2026:
+//   - project 'mono': "ชนันธร ดีเวลลอปเม้นท์" (ocid 8508563959)
+//   - project 'mews': "เรืองปัญญา เคหะการ" (ocid 8508139905)
+// Both accounts' earliest available data is 2026-09-01 — there is no August data to pull for either.
+// Ad-level breakdown is not available: every ad group in both accounts currently has exactly one
+// Responsive Search Ad in it (confirmed live on each account's Ads page — 3 active ad groups, 3 active
+// ads, 1:1:1 with their campaigns), so `ad` is set equal to `adgroup` here and the three tables below
+// end up showing the same rows — that's an accurate reflection of the accounts, not a shortcut.
 const googleAsOfDate = '1 - 22 ก.ย. 2026'; // date range covered by the last import (see googleRaw below)
 const googleRaw = [
   // {project:'mono', date:'YYYY-MM-DD', campaign:'', adgroup:'', ad:'', impressions:0, clicks:0, cost:0, conversions:0},
@@ -1409,6 +1411,69 @@ const googleRaw = [
   {project:'mono', date:'2026-09-03', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:41, clicks:0, cost:0.00, conversions:0},
   {project:'mono', date:'2026-09-02', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:6, clicks:0, cost:0.00, conversions:0},
   {project:'mono', date:'2026-09-01', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:0, clicks:0, cost:0.00, conversions:0},
+  {project:'mews', date:'2026-09-06', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:553, clicks:18, cost:324.21, conversions:0},
+  {project:'mews', date:'2026-09-08', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:459, clicks:18, cost:279.65, conversions:0},
+  {project:'mews', date:'2026-09-05', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:294, clicks:17, cost:311.63, conversions:0},
+  {project:'mews', date:'2026-09-07', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:471, clicks:17, cost:281.24, conversions:0},
+  {project:'mews', date:'2026-09-04', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:446, clicks:16, cost:327.95, conversions:0},
+  {project:'mews', date:'2026-09-03', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:403, clicks:13, cost:320.49, conversions:0},
+  {project:'mews', date:'2026-09-07', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:274, clicks:11, cost:599.92, conversions:0},
+  {project:'mews', date:'2026-09-16', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:392, clicks:11, cost:114.85, conversions:0},
+  {project:'mews', date:'2026-09-11', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:297, clicks:10, cost:117.48, conversions:0},
+  {project:'mews', date:'2026-09-13', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:604, clicks:10, cost:122.36, conversions:0},
+  {project:'mews', date:'2026-09-15', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:213, clicks:10, cost:107.78, conversions:0},
+  {project:'mews', date:'2026-09-10', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:236, clicks:9, cost:98.36, conversions:0},
+  {project:'mews', date:'2026-09-14', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:529, clicks:9, cost:110.00, conversions:0},
+  {project:'mews', date:'2026-09-20', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:231, clicks:9, cost:106.99, conversions:0},
+  {project:'mews', date:'2026-09-21', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:367, clicks:9, cost:110.74, conversions:0},
+  {project:'mews', date:'2026-09-06', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:321, clicks:8, cost:600.00, conversions:0},
+  {project:'mews', date:'2026-09-08', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:293, clicks:8, cost:361.11, conversions:0},
+  {project:'mews', date:'2026-09-09', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:310, clicks:8, cost:100.76, conversions:0},
+  {project:'mews', date:'2026-09-18', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:362, clicks:8, cost:100.90, conversions:0},
+  {project:'mews', date:'2026-09-19', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:510, clicks:8, cost:108.21, conversions:0},
+  {project:'mews', date:'2026-09-05', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:310, clicks:7, cost:599.74, conversions:0},
+  {project:'mews', date:'2026-09-21', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:278, clicks:7, cost:113.36, conversions:0},
+  {project:'mews', date:'2026-09-02', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:138, clicks:7, cost:323.34, conversions:0},
+  {project:'mews', date:'2026-09-12', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:387, clicks:7, cost:83.33, conversions:0},
+  {project:'mews', date:'2026-09-17', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:616, clicks:7, cost:96.38, conversions:0},
+  {project:'mews', date:'2026-09-16', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:139, clicks:6, cost:129.16, conversions:0},
+  {project:'mews', date:'2026-09-19', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:177, clicks:6, cost:111.71, conversions:0},
+  {project:'mews', date:'2026-09-20', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:179, clicks:6, cost:110.78, conversions:0},
+  {project:'mews', date:'2026-09-09', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:265, clicks:5, cost:124.43, conversions:0},
+  {project:'mews', date:'2026-09-11', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:56, clicks:5, cost:102.86, conversions:0},
+  {project:'mews', date:'2026-09-13', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:172, clicks:5, cost:108.69, conversions:0},
+  {project:'mews', date:'2026-09-14', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:394, clicks:5, cost:117.76, conversions:0},
+  {project:'mews', date:'2026-09-15', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:146, clicks:5, cost:100.56, conversions:0},
+  {project:'mews', date:'2026-09-17', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:258, clicks:5, cost:94.57, conversions:0},
+  {project:'mews', date:'2026-09-18', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:165, clicks:5, cost:100.22, conversions:0},
+  {project:'mews', date:'2026-09-10', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:197, clicks:4, cost:108.51, conversions:0},
+  {project:'mews', date:'2026-09-12', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:309, clicks:4, cost:116.87, conversions:0},
+  {project:'mews', date:'2026-09-22', campaign:'Search_Keyword_Generic', adgroup:'Keyword_Generic', ad:'Keyword_Generic', impressions:125, clicks:4, cost:50.45, conversions:0},
+  {project:'mews', date:'2026-09-05', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:109, clicks:4, cost:599.93, conversions:0},
+  {project:'mews', date:'2026-09-06', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:137, clicks:4, cost:590.90, conversions:0},
+  {project:'mews', date:'2026-09-22', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:54, clicks:3, cost:49.96, conversions:0},
+  {project:'mews', date:'2026-09-09', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:133, clicks:3, cost:558.80, conversions:0},
+  {project:'mews', date:'2026-09-13', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:55, clicks:3, cost:144.27, conversions:0},
+  {project:'mews', date:'2026-09-20', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:158, clicks:3, cost:158.88, conversions:0},
+  {project:'mews', date:'2026-09-08', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:111, clicks:2, cost:597.18, conversions:0},
+  {project:'mews', date:'2026-09-10', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:137, clicks:2, cost:126.49, conversions:0},
+  {project:'mews', date:'2026-09-14', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:17, clicks:2, cost:101.97, conversions:0},
+  {project:'mews', date:'2026-09-15', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:104, clicks:2, cost:100.65, conversions:0},
+  {project:'mews', date:'2026-09-16', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:82, clicks:2, cost:98.60, conversions:0},
+  {project:'mews', date:'2026-09-18', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:102, clicks:2, cost:116.17, conversions:0},
+  {project:'mews', date:'2026-09-21', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:210, clicks:2, cost:115.97, conversions:0},
+  {project:'mews', date:'2026-09-04', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:323, clicks:1, cost:47.21, conversions:0},
+  {project:'mews', date:'2026-09-04', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:279, clicks:1, cost:134.39, conversions:0},
+  {project:'mews', date:'2026-09-11', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:72, clicks:1, cost:101.26, conversions:0},
+  {project:'mews', date:'2026-09-12', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:138, clicks:1, cost:75.11, conversions:0},
+  {project:'mews', date:'2026-09-17', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:177, clicks:1, cost:51.14, conversions:0},
+  {project:'mews', date:'2026-09-19', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:239, clicks:1, cost:51.48, conversions:0},
+  {project:'mews', date:'2026-09-22', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:34, clicks:1, cost:57.03, conversions:0},
+  {project:'mews', date:'2026-09-02', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:3, clicks:0, cost:0.00, conversions:0},
+  {project:'mews', date:'2026-09-03', campaign:'Search_Keyword_Brand', adgroup:'Keyword_Brand', ad:'Keyword_Brand', impressions:6, clicks:0, cost:0.00, conversions:0},
+  {project:'mews', date:'2026-09-02', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:8, clicks:0, cost:0.00, conversions:0},
+  {project:'mews', date:'2026-09-03', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:86, clicks:0, cost:0.00, conversions:0},
+  {project:'mews', date:'2026-09-07', campaign:'Search_Keyword_Competitor', adgroup:'Keyword_Competitor', ad:'Keyword_Competitor', impressions:325, clicks:0, cost:0.00, conversions:0},
 ];
 
 // Returns this project's rows filtered to the currently-selected primary date range (liveRanges.primary),
