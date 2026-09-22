@@ -110,6 +110,11 @@
     border:1px solid var(--border); background:var(--page-plane); color:var(--text-primary); cursor:pointer;
   }
   .range-hint { flex-basis:100%; font-size:11.5px; color:var(--text-muted); }
+  .aud-stale-hint {
+    font-size:12.5px; line-height:1.5; padding:9px 12px; margin-bottom:10px; border-radius:8px;
+    background: color-mix(in srgb, #d68a1f 12%, var(--surface-1)); border:1px solid color-mix(in srgb, #d68a1f 40%, var(--border));
+    color: var(--text-primary);
+  }
 
   /* KPI grid */
   .kpi-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 8px; }
@@ -273,6 +278,7 @@
 
   <div class="section-title">สรุปตามกลุ่มเป้าหมาย (Audience / Ad Set)</div>
   <div class="section-note">กลุ่มเป้าหมาย (Ad Set) ชื่อเดียวกันที่ใช้ซ้ำในหลายแคมเปญถูกรวมยอดไว้แถวเดียวกัน · คลิกที่แถวเพื่อดูรายชื่อแชทจริงจาก Messenger — Qualify/Non-Qualify/Walk-in กดยืนยันเอง, Add-Line ตรวจจับอัตโนมัติ</div>
+  <div id="audStaleHint" class="aud-stale-hint" hidden></div>
   <div class="aud-table aud-table-scroll">
     <div class="aud-head-row">
       <div></div><div>กลุ่มเป้าหมาย</div><div>Spend</div><div>Reach</div><div>Inbox</div><div>Qualify</div><div>Non-Qualify</div><div>Cost / Inbox</div><div>Walk-in</div><div>Add-Line</div>
@@ -869,6 +875,24 @@ const chatsRaw = [
   {id:"t_fast20260915_mono_16", page:"mono", pageName:"Chanuntorn Development Group", customerName:"ครูพินภัชช์ เกลี้ยงสง", updatedTime:"2026-09-10T04:40:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:null},
   {id:"t_fast20260915_mono_17", page:"mono", pageName:"Chanuntorn Development Group", customerName:"เรา นับถอยหลัง", updatedTime:"2026-09-09T10:00:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:null, adIds:["120249217180430479"]},
   {id:"t_fast20260915_mono_18", page:"mono", pageName:"Chanuntorn Development Group", customerName:"ธวัชชัย ท่าประโคน", updatedTime:"2026-09-13T05:00:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:"walkin", adIds:["120249217180430479"]},
+  // ---- new chats added 2026-09-22 (fast list-only pull from Business Suite inbox, same convention as the
+  // 2026-09-15 batch above: name + relative day/time + ad_id label read from the conversation's Labels
+  // panel, NOT opened for full message history, so content/messageCount/addLine stay null; updatedTime for
+  // non-"Today" rows is a noon-Bangkok-time approximation except where Business Suite showed an exact
+  // timestamp) — this batch exists specifically because the default 7-day rolling window had gone stale
+  // (last pull was 09-15, 6 days with nothing newer), so every audience group looked empty ----
+  {id:"t_fast20260922_mono_01", page:"mono", pageName:"Chanuntorn Development Group", customerName:"กุงกิ่ง ห้วยกบ", updatedTime:"2026-09-21T18:24:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:"qualify", adIds:["120249236362780479"]},
+  {id:"t_fast20260922_mono_02", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Bpith Hir", updatedTime:"2026-09-20T16:12:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:null, adIds:["120257669978330339"]},
+  {id:"t_fast20260922_mono_03", page:"mono", pageName:"Chanuntorn Development Group", customerName:"พี่ยอด บุญมหาราช", updatedTime:"2026-09-20T14:52:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:null, adIds:["120256125662750339"]},
+  {id:"t_fast20260922_mono_04", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Kanjanaporn Buachang", updatedTime:"2026-09-20T05:00:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:null, adIds:["120243841558920479","120245729450340479"]},
+  {id:"t_fast20260922_mono_05", page:"mono", pageName:"Chanuntorn Development Group", customerName:"จ๋า ก็เป็นของจ๋าแบบเนี่ย", updatedTime:"2026-09-20T05:00:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:null, adIds:["120247451868340479"]},
+  // Indy Firstclass replied to a MottoScape ad (account 2067772447288424, campaign "260521_Message_Motto
+  // Scape_AD บ้านเดี่ยว VDO ตัวอย่าง") — a THIRD Chanuntorn project this dashboard doesn't track yet
+  // (only Mono/Mews exist as selectable projects). Deliberately left OUT of AD_ID_TO_ADSET below so it
+  // doesn't silently vanish from both project views; it falls back into Mono's unattributed bucket via the
+  // page heuristic instead, same as any other not-yet-resolved chat on this page.
+  {id:"t_fast20260922_mono_06", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Indy Firstclass", updatedTime:"2026-09-20T05:00:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:"qualify", adIds:["120244821718630756"]},
+  {id:"t_fast20260922_mono_07", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Sawmin Lin", updatedTime:"2026-09-19T05:00:00+0000", messageCount:null, content:null, addLine:null, suggestedStatus:null, adIds:["120249234272460479"]},
   {id:"t_1810449640300009", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Anuwong Nareesawat", updatedTime:"2026-09-09T00:11:19+0000", messageCount:15, content:null, addLine:false, suggestedStatus:"walkin"},
   {id:"t_10158569817948422", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Papas Karuhaphanvanich", updatedTime:"2026-09-08T13:36:22+0000", messageCount:14, content:null, addLine:false, suggestedStatus:null},
   {id:"t_26552469971061918", page:"mono", pageName:"Chanuntorn Development Group", customerName:"Meng Mugen", updatedTime:"2026-09-08T10:45:33+0000", messageCount:8, content:null, addLine:false, suggestedStatus:null},
@@ -929,7 +953,7 @@ const chatsRaw = [
   {id:"t_9581284568667615", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Milk MilkiizBaa", updatedTime:"2026-09-05T07:53:47+0000", messageCount:13, content:null, addLine:false, suggestedStatus:null},
   {id:"t_2055818171719203", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"J Nopparat Nonnok", updatedTime:"2026-09-05T07:20:22+0000", messageCount:9, content:null, addLine:false, suggestedStatus:null},
   {id:"t_1071528691926435", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Harri Elliott", updatedTime:"2026-09-01T12:49:41+0000", messageCount:1, content:null, addLine:false, suggestedStatus:null},
-  {id:"t_2155035938783401", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Ford Jang Keun Suk", updatedTime:"2026-08-31T04:35:26+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
+  {id:"t_2155035938783401", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Ford Jang Keun Suk", updatedTime:"2026-09-21T03:12:00+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null, adIds:["120209827236640312","120248907619010479","120250010569710479"]},
   {id:"t_2298024384274961", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Cherdchai Numyuang", updatedTime:"2026-08-30T05:05:45+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
   {id:"t_1650996639926396", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"Chung Wu Hsiung", updatedTime:"2026-08-30T02:09:25+0000", messageCount:4, content:null, addLine:false, suggestedStatus:null},
   {id:"t_923136780864132", page:"mews", pageName:"Mews พระราม 2 - บางขุนเทียน", customerName:"ไอริน ไอรัก", updatedTime:"2026-08-29T03:51:48+0000", messageCount:10, content:null, addLine:false, suggestedStatus:null},
@@ -1421,6 +1445,17 @@ const AD_ID_TO_ADSET = {
   '120248797051340403': { project:'mews', adset:'Re-target', campaign:'Mews_Inbox_FakeAlbum' },
   '120248797142100403': { project:'mews', adset:'RealEs+BusinessOwer+Inves+Lifetyle', campaign:'Mews_Inbox_VDO' },
   '120248797118840403': { project:'mews', adset:'Lifestyle', campaign:'Mews_Inbox_FakeAlbum' },
+  // resolved 2026-09-22, from the fresh Business Suite pull above (via Marketing API ads_get_ad_entities)
+  '120248907619010479': { project:'mono', adset:'Lookalike 1%', campaign:'260723_Message_Mono_Pic_AD MoveNow Single' },
+  '120250010569710479': { project:'mono', adset:'Retarget', campaign:'260920_Message_Mono_LastCall' },
+  '120243841558920479': { project:'mono', adset:'ยิงแบบกรองความสนใจ ไม่แยกประเภทลูกค้า', campaign:'260421_Message_Mono_Pic' },
+  '120245729450340479': { project:'mono', adset:'Lookalike (1%) - เบอร์ติดต่อ MN', campaign:'260522_Message_Mono_Pic_AD บ้านตัวอย่าง' },
+  '120247451868340479': { project:'mono', adset:'SME & Lifestyle เจ้าของธุรกิจ / Online Seller', campaign:'260617_Message_Mono_Pic_AD บ้านตัวอย่าง' },
+  '120249234272460479': { project:'mono', adset:'[lookalike 2%]_[local/CBD]_[interest audience]', campaign:'260805_Aware_Mono' },
+  '120256125662750339': { project:'mews', adset:'Detached house', campaign:'260709_Message_Mews_หญิง_AD_MoveNow_Single' },
+  // 120209827236640312 (an old 2024 ad on Ford Jang Keun Suk's thread) and 120244821718630756 (Indy
+  // Firstclass's ad — belongs to the MottoScape account, a third project this dashboard doesn't track
+  // yet) are deliberately NOT resolved here — see the comments on those chatsRaw entries above.
 };
 // Resolve ALL of a chat's real ad-set attributions, if we know them. A chat can carry more than one
 // ad_id (it replied to more than one ad over time, sometimes even ads from different projects — see
@@ -1627,6 +1662,31 @@ function renderAudienceRows(){
     </div>`;
 
   container.innerHTML = keys.length ? (rowsHtml + unattributedHtml + totalsHtml) : '<div style="padding:16px;color:var(--text-muted);font-size:13px;">ไม่มีกลุ่มเป้าหมายสำหรับโปรเจคนี้</div>';
+  renderAudStaleHint();
+}
+
+// The chat list (chatsRaw) is a manual pull from Messenger/Business Suite, NOT live — unlike the
+// spend/reach/inbox numbers above it, which really do refresh daily from the Meta API. If the manual pull
+// goes stale (nobody has re-pulled it in a while) relative to whatever date range is currently selected,
+// every audience group silently shows zero chats, which reads as "the data is broken" rather than "the
+// chat snapshot is just older than the selected range." This surfaces that distinction instead of hiding it.
+function renderAudStaleHint(){
+  const hintEl = document.getElementById('audStaleHint');
+  if (!hintEl) return;
+  if (chatsForProject(selectedProject).length > 0 || !chatsRaw.length){
+    hintEl.hidden = true;
+    hintEl.innerHTML = '';
+    return;
+  }
+  const dayStrs = chatsRaw
+    .map(c => c.updatedTime ? new Date(c.updatedTime) : null)
+    .filter(d => d && !isNaN(d))
+    .map(toDateStr);
+  if (!dayStrs.length){ hintEl.hidden = true; return; }
+  const minDay = dayStrs.reduce((a, b) => (a < b ? a : b));
+  const maxDay = dayStrs.reduce((a, b) => (a > b ? a : b));
+  hintEl.hidden = false;
+  hintEl.innerHTML = `⚠️ ไม่มีรายชื่อแชทในช่วงวันที่ที่เลือกอยู่ตอนนี้ (${liveRanges.primary.since} – ${liveRanges.primary.until}) — ไม่ได้แปลว่าไม่มีคนทัก แต่ข้อมูลแชทที่ดึงมาล่าสุด (นำเข้าด้วยมือจาก Messenger/Business Suite แยกจากตัวเลข Spend/Reach/Inbox ด้านบนซึ่งดึงสดทุกวัน) ครอบคลุมแค่ช่วง <strong>${minDay} – ${maxDay}</strong> เท่านั้น ลองเลือกช่วงวันที่ให้ครอบคลุมช่วงนี้ หรือแจ้งให้ดึงรายชื่อแชทใหม่`;
 }
 
 // ---------- delegated interactions (row expand + chat status clicks) ----------
