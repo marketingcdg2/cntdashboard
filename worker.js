@@ -23,7 +23,7 @@
 //     and be ready to rotate/revoke it in Meta Business Settings if that ever becomes a problem.
 //     To use this option: replace 'PASTE_YOUR_TOKEN_HERE' below with your real Meta access token, then
 //     commit. If both this and the Cloudflare secret (Option A) are set, the Cloudflare secret wins.
-const HARDCODED_META_ACCESS_TOKEN = 'EAAN7nFBuZCu0BSl8HQZAaskcZB90duuUMXbQo93iTwY7Mvw2kDsa7mBptIOZCWlQDDjY2UfripuiAp75mtnUAquzQZAymElsqssAtHJL01nZAUHkFzsyTZBufbjTs7D0AIzQ4whALteKmZCwRsEEnGQspwYi7Br20JTQZBczUCfhduagT2Bbo2J3XbJBKJHluZAhgxtEy82YGdPZBO0saus1Uze1rgY2y8zTxyFwrKtcElBaLd2BUC2jWd804JvtsmVYGnd2FOdMwLXTmHI5bnYcrWGCVz6';
+const HARDCODED_META_ACCESS_TOKEN = 'EAAN7nFBuZCu0BSkAvq0WEacuGKl7IfNY5rB1EIm4ZA5aDPQqi6hlM8VKY6hR7RRmy6gYQr6ZCavEM9PZCgm2ppJCD9pN95TRM4BAz29ZBwgbbOi5FKI92znbZBxbxjJ52Yplu8fxppmf1hziaqm01CWFD8TDVYOU29JZBduQtQPAZBeMPseeGiUMCP6vl5glC8rZA';
 //
 // Until a token is available from either option, /api/insights returns a clear error instead of
 // failing silently.
