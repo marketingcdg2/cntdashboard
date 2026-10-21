@@ -6,20 +6,24 @@ export async function report(request,token,requestGraph=fetch){
  if(!Object.hasOwn(ACCOUNTS,project||'')||!validDate(since)||!validDate(until)||since>until||(Date.parse(until)-Date.parse(since))/86400000>366)return json({error:'เลือกโครงการและช่วงวันที่ไม่เกิน 367 วัน'},400);
  if(!token)return json({error:'ยังไม่ได้ตั้งค่า Meta access token'},503);
  try{
- const rows=[];
+ const rows=[],messageRows=[];
  for(const account of ACCOUNTS[project]){
+  for(const actionOnly of [false,true]){
   let next=new URL(`https://graph.facebook.com/v21.0/act_${account}/insights`);
-  Object.entries({level:'ad',fields:'ad_id,ad_name,adset_id,adset_name,campaign_name,objective,spend,impressions,clicks,actions,date_start',time_increment:'1',time_range:JSON.stringify({since,until}),limit:'500'}).forEach(([k,v])=>next.searchParams.set(k,v));
+  Object.entries({level:'ad',fields:actionOnly?'ad_id,ad_name,adset_name,campaign_name,objective,actions,date_start':'ad_id,ad_name,adset_id,adset_name,campaign_name,objective,spend,impressions,clicks,date_start',time_increment:'1',time_range:JSON.stringify({since,until}),limit:'500'}).forEach(([k,v])=>next.searchParams.set(k,v));
   let pages=0;
   while(next){
    if(++pages>40)throw new Error('รายงานมีข้อมูลมากเกินไป กรุณาลดช่วงวันที่');
    const r=await requestGraph(next,{headers:{Authorization:`Bearer ${token}`},signal:AbortSignal.timeout(45000)}),body=await r.json();
    if(!r.ok||body.error)throw new Error('Meta API ไม่สามารถโหลดรายงานได้ กรุณาลองใหม่');
-   rows.push(...(body.data||[]));
+   (actionOnly?messageRows:rows).push(...(body.data||[]));
    next=body.paging?.next?new URL(body.paging.next):null;
    if(next&&(next.hostname!=='graph.facebook.com'||next.protocol!=='https:'))throw new Error('Invalid pagination');
   }
  }
+ }
+ const byAdDay=new Map(rows.map(r=>[r.ad_id+'|'+r.date_start,r]));
+ for(const r of messageRows){const key=r.ad_id+'|'+r.date_start;const metrics=byAdDay.get(key);if(metrics)metrics.actions=r.actions;else {const item={...r,spend:'0',impressions:'0',clicks:'0'};rows.push(item);byAdDay.set(key,item);}}
  const images={};
  const ids=[...new Set(rows.map(r=>r.ad_id).filter(Boolean))];
  for(let offset=0;offset<ids.length;offset+=50){
