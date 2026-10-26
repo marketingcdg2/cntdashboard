@@ -4,6 +4,7 @@ const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control
 export async function report(request,token,requestGraph=fetch){
  const url=new URL(request.url),project=url.searchParams.get('project'),since=url.searchParams.get('since'),until=url.searchParams.get('until');
  if(!Object.hasOwn(ACCOUNTS,project||'')||!validDate(since)||!validDate(until)||since>until||(Date.parse(until)-Date.parse(since))/86400000>366)return json({error:'เลือกโครงการและช่วงวันที่ไม่เกิน 367 วัน'},400);
+ if(project==='mews')return json({error:'หยุดดึงข้อมูล Mews ชั่วคราว'},503);
  if(!token)return json({error:'ยังไม่ได้ตั้งค่า Meta access token'},503);
  try{
  const rows=[],messageRows=[];

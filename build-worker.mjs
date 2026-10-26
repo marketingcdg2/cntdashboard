@@ -5,5 +5,5 @@ const original = readFileSync(new URL('./worker.js', import.meta.url), 'utf8');
 const marker = "if (url.pathname === '/api/insights')";
 if (!original.includes(marker)) throw new Error('Original Worker route not found');
 const source = "import { report } from './report-worker.js';\n" + original.replace(marker,
-  "if (url.pathname === '/api/report') return report(request, env.META_ACCESS_TOKEN || HARDCODED_META_ACCESS_TOKEN);\n    " + marker);
+  "if (url.pathname === '/api/insights' && (url.searchParams.get('accounts') || '').split(',').some(id => ['1003863749343307','1822065945093567'].includes(id.trim().replace(/^act_/,'')))) return Response.json({error:'หยุดดึงข้อมูล Mews ชั่วคราว'}, {status:503});\n    if (url.pathname === '/api/report') return report(request, env.META_ACCESS_TOKEN || HARDCODED_META_ACCESS_TOKEN);\n    " + marker);
 writeFileSync(new URL('./generated-worker.js', import.meta.url), source);
