@@ -7,6 +7,8 @@ export async function report(request,token,requestGraph=fetch){
  if(project==='mews')return json({error:'หยุดดึงข้อมูล Mews ชั่วคราว'},503);
  if(!token)return json({error:'ยังไม่ได้ตั้งค่า Meta access token'},503);
  try{
+ const fetchedDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Bangkok',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const completeUntil=new Date(Date.parse(fetchedDate+'T00:00:00Z')-86400000).toISOString().slice(0,10);
  const rows=[],messageRows=[];
  for(const account of ACCOUNTS[project]){
   for(const actionOnly of [false,true]){
@@ -17,7 +19,8 @@ export async function report(request,token,requestGraph=fetch){
    if(++pages>40)throw new Error('รายงานมีข้อมูลมากเกินไป กรุณาลดช่วงวันที่');
    const r=await requestGraph(next,{headers:{Authorization:`Bearer ${token}`},signal:AbortSignal.timeout(45000)}),body=await r.json();
    if(!r.ok||body.error)throw new Error('Meta API ไม่สามารถโหลดรายงานได้ กรุณาลองใหม่');
-   (actionOnly?messageRows:rows).push(...(body.data||[]));
+   if(!Array.isArray(body.data))throw new Error('Meta API ส่งข้อมูลรายงานไม่ครบ กรุณาลองใหม่');
+   (actionOnly?messageRows:rows).push(...body.data);
    next=body.paging?.next?new URL(body.paging.next):null;
    if(next&&(next.hostname!=='graph.facebook.com'||next.protocol!=='https:'))throw new Error('Invalid pagination');
   }
@@ -60,6 +63,6 @@ export async function report(request,token,requestGraph=fetch){
  }
  const normalized=rows.map(r=>({id:r.ad_id,image:images[r.ad_id]||null,name:r.ad_name,group:r.adset_name,campaign:r.campaign_name,date:r.date_start,objective:r.objective,spend:Number(r.spend)||0,impressions:Number(r.impressions)||0,clicks:Number(r.clicks)||0,messages:Number((r.actions||[]).find(a=>a.action_type==='onsite_conversion.messaging_conversation_started_7d')?.value)||0,platform:'meta'}));
  const daily=new Map();for(const r of normalized){const d=daily.get(r.date)||{date:r.date,spend:0,impressions:0,clicks:0,messages:0};for(const k of ['spend','impressions','clicks','messages'])d[k]+=r[k];daily.set(r.date,d);}
- return json({campaigns:normalized.map(r=>({...r,name:r.campaign})),groups:normalized.map(r=>({...r,name:r.group})),creatives:normalized,daily:[...daily.values()],platform:'meta'});
+ return json({campaigns:normalized.map(r=>({...r,name:r.campaign})),groups:normalized.map(r=>({...r,name:r.group})),creatives:normalized,daily:[...daily.values()],platform:'meta',coverage:{since,until,availableUntil:fetchedDate,completeUntil}});
  }catch(error){return json({error:error.message},502);}
 }
