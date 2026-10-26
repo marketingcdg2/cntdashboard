@@ -12,5 +12,12 @@
     "run_worker_first": [
       "/api/*"
     ]
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "RESULTS_DB",
+      "database_name": "cntdashboard-results",
+      "database_id": "5ce15450-f7e1-44f9-a82c-81ceda64c4ae"
+    }
+  ]
 }
